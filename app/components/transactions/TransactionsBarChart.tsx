@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 const data = [
   { day: 1, transactions: 150 },
@@ -38,27 +38,28 @@ const data = [
 
 export default function TransactionsBarChart() {
   return (
-    <div className="m-4 p-4 bg-white rounded-lg shadow-md">
+    <div className="m-4 p-4 bg-white rounded-3xl">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-900">Total Transactions</h2>
-        <select className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <select className="px-3 py-1 border border-gray-400 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           <option>Daily ▼</option>
         </select>
       </div>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="day" tick={{ fontSize: 12 }} stroke="#6b7280" />
-          <YAxis tick={{ fontSize: 12 }} stroke="#6b7280" />
-          <Tooltip 
-            contentStyle={{ backgroundColor: 'white', border: '1px solid #d1d5db', borderRadius: '8px' }}
-            labelStyle={{ fontSize: '12px' }}
-            formatter={(value) => [`${value} transactions`]}
-          />
-          <Legend />
-          <Bar dataKey="transactions" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+
+      <div className="border border-gray-100 rounded-3xl h-64 md:h-72">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 20, right: 30 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} stroke="#6b7280" />
+            <YAxis tick={{ fontSize: 12 }} stroke="#6b7280" />
+            <Tooltip 
+              contentStyle={{ backgroundColor: 'white', border: '1px solid #d1d5db', borderRadius: '8px' }}
+              labelStyle={{ fontSize: '12px' }}
+            />
+            <Bar dataKey="transactions" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={16} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }

@@ -18,23 +18,28 @@ import {
   X,
 } from "lucide-react";
 
-// Menu items
-const MENU_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
-  { label: "Products Management", href: "/products", icon: <Package size={20} /> },
-  { label: "Category Management", href: "/categories", icon: <Tag size={20} /> },
+interface MenuItem {
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+const MENU_ITEMS: MenuItem[] = [
+  { label: "Dashboard", href: "/", icon: <Home size={20} /> },
+  { label: "Products Management", href: "/management/product-management", icon: <Package size={20} /> },
+  { label: "Category Management", href: "/management/category-management", icon: <Tag size={20} /> },
   { label: "Starter Packs", href: "/starter-packs", icon: <Gift size={20} /> },
   { label: "Transactions", href: "/transactions", icon: <CreditCard size={20} /> },
-  { label: "Users Management", href: "/users", icon: <Users size={20} /> },
-  { label: "Verification Request", href: "/verifications", icon: <UserCheck size={20} /> },
-  { label: "Report Management", href: "/reports", icon: <FileText size={20} /> },
-  { label: "Communication Mgmt", href: "/communications", icon: <Mail size={20} /> },
-  { label: "Banners Mgmt", href: "/banners", icon: <ImageIcon size={20} /> },
+  { label: "Users Management", href: "/management/users-management", icon: <Users size={20} /> },
+  { label: "Verification Request", href: "/requests", icon: <UserCheck size={20} /> },
+  { label: "Report Management", href: "/management/report-management", icon: <FileText size={20} /> },
+  { label: "Communication Mgmt", href: "/management/communication-management", icon: <Mail size={20} /> },
+  { label: "Banners Mgmt", href: "/management/banner-management", icon: <ImageIcon size={20} /> },
   { label: "Settings", href: "/settings", icon: <Settings size={20} /> },
 ];
 
 export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const SidebarContent = (
     <div className="flex flex-col h-full w-full overflow-y-auto bg-slate-900 text-white p-4">
@@ -62,7 +67,6 @@ export default function Sidebar() {
           ))}
         </ul>
       </nav>
-
     </div>
   );
 
