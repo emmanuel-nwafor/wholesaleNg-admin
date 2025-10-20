@@ -1,17 +1,37 @@
-import React from 'react'
-import { ArrowRight, Eye } from 'lucide-react'
+import React from "react";
+import { ArrowRight, Eye } from "lucide-react";
 
 const mockProducts = [
-  { id: 1, name: 'iPhone 16 Pro Max', seller: 'by ABSOLUTE stores', price: '₦5,000', moq: '50 pieces' },
-  { id: 2, name: 'iPhone 16 Pro', seller: 'by ABSOLUTE stores', price: '₦5,000', moq: '50 pieces' },
-  { id: 3, name: 'iPhone 16 Pro Max', seller: 'by ABSOLUTE stores', price: '₦5,000', moq: '50 pieces' },
-]
+  {
+    id: 1,
+    name: "iPhone 16 Pro Max",
+    seller: "by ABSOLUTE stores",
+    price: "₦5,000",
+    moq: "50 pieces",
+  },
+  {
+    id: 2,
+    name: "iPhone 16 Pro",
+    seller: "by ABSOLUTE stores",
+    price: "₦5,000",
+    moq: "50 pieces",
+  },
+  {
+    id: 3,
+    name: "iPhone 16 Pro Max",
+    seller: "by ABSOLUTE stores",
+    price: "₦5,000",
+    moq: "50 pieces",
+  },
+];
 
 export default function VerificationRequests() {
   return (
     <div className="m-4 bg-white rounded-3xl border border-gray-200 overflow-hidden">
       <div className="flex justify-between items-center p-4">
-        <h2 className="text-sm font-bold text-gray-900">Verification Requests</h2>
+        <h2 className="text-sm font-bold text-gray-900">
+          Verification Requests
+        </h2>
         <button className="flex items-center gap-1 text-blue-600 text-sm">
           View All
           <ArrowRight size={16} />
@@ -21,8 +41,12 @@ export default function VerificationRequests() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Store Name</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Vendor Name</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Store Name
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Vendor Name
+              </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider"></th>
             </tr>
           </thead>
@@ -35,8 +59,12 @@ export default function VerificationRequests() {
                       <span className="text-xs font-medium">IP</span>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                      <div className="text-sm text-gray-500">{product.seller}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {product.seller}
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -45,8 +73,12 @@ export default function VerificationRequests() {
                   <div className="text-gray-500">{product.moq}</div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                  <button className="px-2 py-2 bg-gray-100 text-red-400 rounded-xl hover:bg-red-200 transition">Reject</button>
-                  <button className="px-2 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-500 transition">Approve</button>
+                  <button className="px-2 py-2 bg-gray-100 text-red-400 rounded-xl hover:bg-red-200 transition">
+                    Reject
+                  </button>
+                  <button className="px-2 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-500 transition">
+                    Approve
+                  </button>
                 </td>
               </tr>
             ))}
@@ -54,5 +86,5 @@ export default function VerificationRequests() {
         </table>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,15 @@
-"use client"
+"use client";
 
-import React from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import React from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const data = [
   { day: 1, transactions: 150 },
@@ -34,7 +42,7 @@ const data = [
   { day: 28, transactions: 340 },
   { day: 29, transactions: 200 },
   { day: 30, transactions: 160 },
-]
+];
 
 export default function TransactionsBarChart() {
   return (
@@ -52,14 +60,23 @@ export default function TransactionsBarChart() {
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="day" tick={{ fontSize: 12 }} stroke="#6b7280" />
             <YAxis tick={{ fontSize: 12 }} stroke="#6b7280" />
-            <Tooltip 
-              contentStyle={{ backgroundColor: 'white', border: '1px solid #d1d5db', borderRadius: '8px' }}
-              labelStyle={{ fontSize: '12px' }}
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "white",
+                border: "1px solid #d1d5db",
+                borderRadius: "8px",
+              }}
+              labelStyle={{ fontSize: "12px" }}
             />
-            <Bar dataKey="transactions" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={16} />
+            <Bar
+              dataKey="transactions"
+              fill="#3b82f6"
+              radius={[4, 4, 0, 0]}
+              barSize={16}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
-  )
+  );
 }

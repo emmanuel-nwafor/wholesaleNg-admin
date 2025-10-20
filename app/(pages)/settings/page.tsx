@@ -1,11 +1,9 @@
-import React from 'react'
+import React from "react";
 
 export default function Settings() {
   return (
     <>
-        <div className="">
-            This is settings for admins
-        </div>
+      <div className="">This is settings for admins</div>
     </>
-  )
+  );
 }

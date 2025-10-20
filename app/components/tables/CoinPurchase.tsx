@@ -1,11 +1,32 @@
-import React from 'react'
-import { ArrowRight, Eye } from 'lucide-react'
+import React from "react";
+import { ArrowRight, Eye } from "lucide-react";
 
 const mockProducts = [
-  { id: 1, name: 'Joanna Adeleke', email: 'Joannaadeleke@gmail.com', price: '₦5,000', amount: '10 Coins', status: "Successful" },
-  { id: 2, name: 'Daniel Okafor', email: 'daniel@gmail.com', price: '₦5,000', amount: '20 Coins', status: "Successful" },
-  { id: 3, name: 'Appfur NG', email: 'appfur@mail.com', price: '₦5,000', amount: '100 Coins', status: "Successful" },
-]
+  {
+    id: 1,
+    name: "Joanna Adeleke",
+    email: "Joannaadeleke@gmail.com",
+    price: "₦5,000",
+    amount: "10 Coins",
+    status: "Successful",
+  },
+  {
+    id: 2,
+    name: "Daniel Okafor",
+    email: "daniel@gmail.com",
+    price: "₦5,000",
+    amount: "20 Coins",
+    status: "Successful",
+  },
+  {
+    id: 3,
+    name: "Appfur NG",
+    email: "appfur@mail.com",
+    price: "₦5,000",
+    amount: "100 Coins",
+    status: "Successful",
+  },
+];
 
 export default function CoinPurchase() {
   return (
@@ -21,9 +42,15 @@ export default function CoinPurchase() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Buyer</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Amount</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Buyer
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Amount
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -32,8 +59,12 @@ export default function CoinPurchase() {
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                      <div className="text-[12px] text-gray-500">{product.email}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </div>
+                      <div className="text-[12px] text-gray-500">
+                        {product.email}
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -42,7 +73,7 @@ export default function CoinPurchase() {
                   <div className="text-gray-500">{product.amount}</div>
                 </td>
                 <td className="px-1 py-1 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                  <span className='px-1 text-[10px] py-1 bg-green-100 text-green-400 rounded-2xl transition'>
+                  <span className="px-1 text-[10px] py-1 bg-green-100 text-green-400 rounded-2xl transition">
                     {product.status}
                   </span>
                 </td>
@@ -52,5 +83,5 @@ export default function CoinPurchase() {
         </table>
       </div>
     </div>
-  )
+  );
 }

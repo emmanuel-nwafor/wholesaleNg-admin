@@ -1,5 +1,5 @@
-import React from 'react'
-import { Users, Coins, AlertTriangleIcon, DollarSign, LucidePiggyBank, Luggage, ShoppingBagIcon } from 'lucide-react'
+import React from "react";
+import { ShoppingBagIcon } from "lucide-react";
 
 export default function AdminProductAnalytics() {
   return (
@@ -8,38 +8,38 @@ export default function AdminProductAnalytics() {
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 m-3">
         <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
-            <div className="">
-                <h3 className="text-sm text-gray-600 mb-1">Total Users</h3>
-                <p className="text-2xl font-bold text-gray-900">0</p>
-            </div>
+          <div className="">
+            <h3 className="text-sm text-gray-600 mb-1">Total Users</h3>
+            <p className="text-2xl font-bold text-gray-900">0</p>
+          </div>
 
-            <ShoppingBagIcon className="w-8 h-8 text-gray-700" />
+          <ShoppingBagIcon className="w-8 h-8 text-gray-700" />
         </div>
         <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
-            <div className="">
-                <h3 className="text-sm text-gray-600 mb-1">Pending Products</h3>
-                <p className="text-2xl font-bold text-gray-900">0</p>
-            </div>
+          <div className="">
+            <h3 className="text-sm text-gray-600 mb-1">Pending Products</h3>
+            <p className="text-2xl font-bold text-gray-900">0</p>
+          </div>
 
-            <ShoppingBagIcon className="w-8 h-8 text-yellow-400" />
+          <ShoppingBagIcon className="w-8 h-8 text-yellow-400" />
         </div>
         <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
-            <div className="">
-                <h3 className="text-sm text-gray-600 mb-1">Approved Products</h3>
-                <p className="text-2xl font-bold text-gray-900">0</p>
-            </div>
+          <div className="">
+            <h3 className="text-sm text-gray-600 mb-1">Approved Products</h3>
+            <p className="text-2xl font-bold text-gray-900">0</p>
+          </div>
 
-            <ShoppingBagIcon className="w-8 h-8 text-green-400" />
+          <ShoppingBagIcon className="w-8 h-8 text-green-400" />
         </div>
         <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
-            <div className="">
-                <h3 className="text-sm text-gray-600 mb-1">Rejected Products</h3>
-                <p className="text-2xl font-bold text-gray-900">0</p>
-            </div>
+          <div className="">
+            <h3 className="text-sm text-gray-600 mb-1">Rejected Products</h3>
+            <p className="text-2xl font-bold text-gray-900">0</p>
+          </div>
 
-            <ShoppingBagIcon className="w-8 h-8 text-red-400" />
+          <ShoppingBagIcon className="w-8 h-8 text-red-400" />
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import React from 'react'
-import RenderHome from './components/home-renderer/RenderHome'
+import React from "react";
+import RenderHome from "./components/home-renderer/RenderHome";
 
 export default function page() {
   return (
@@ -8,5 +8,5 @@ export default function page() {
         <RenderHome />
       </div>
     </>
-  )
+  );
 }

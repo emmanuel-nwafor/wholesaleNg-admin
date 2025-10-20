@@ -1,11 +1,29 @@
-import React from 'react'
-import { ArrowRight, Eye } from 'lucide-react'
+import React from "react";
+import { ArrowRight, Eye } from "lucide-react";
 
 const mockProducts = [
-  { id: 1, name: 'iPhone 16 Pro Max', seller: 'by ABSOLUTE stores', price: '₦5,000', moq: '50 pieces' },
-  { id: 2, name: 'iPhone 16 Pro', seller: 'by ABSOLUTE stores', price: '₦5,000', moq: '50 pieces' },
-  { id: 3, name: 'iPhone 16 Pro Max', seller: 'by ABSOLUTE stores', price: '₦5,000', moq: '50 pieces' },
-]
+  {
+    id: 1,
+    name: "iPhone 16 Pro Max",
+    seller: "by ABSOLUTE stores",
+    price: "₦5,000",
+    moq: "50 pieces",
+  },
+  {
+    id: 2,
+    name: "iPhone 16 Pro",
+    seller: "by ABSOLUTE stores",
+    price: "₦5,000",
+    moq: "50 pieces",
+  },
+  {
+    id: 3,
+    name: "iPhone 16 Pro Max",
+    seller: "by ABSOLUTE stores",
+    price: "₦5,000",
+    moq: "50 pieces",
+  },
+];
 
 export default function ProductsApprove() {
   return (
@@ -21,8 +39,12 @@ export default function ProductsApprove() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Product</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Price/MOQ</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Product
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Price/MOQ
+              </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider"></th>
             </tr>
           </thead>
@@ -35,8 +57,12 @@ export default function ProductsApprove() {
                       <span className="text-xs font-medium">IP</span>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                      <div className="text-sm text-gray-500">{product.seller}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {product.seller}
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -45,8 +71,12 @@ export default function ProductsApprove() {
                   <div className="text-gray-500">{product.moq}</div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                  <button className="px-2 py-2 bg-gray-100 text-red-400 rounded-xl hover:bg-red-200 transition">Reject</button>
-                  <button className="px-2 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-500 transition">Approve</button>
+                  <button className="px-2 py-2 bg-gray-100 text-red-400 rounded-xl hover:bg-red-200 transition">
+                    Reject
+                  </button>
+                  <button className="px-2 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-500 transition">
+                    Approve
+                  </button>
                 </td>
               </tr>
             ))}
@@ -54,5 +84,5 @@ export default function ProductsApprove() {
         </table>
       </div>
     </div>
-  )
+  );
 }

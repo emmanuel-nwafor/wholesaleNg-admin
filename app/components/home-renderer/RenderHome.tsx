@@ -1,8 +1,8 @@
-import React from 'react'
-import Header from '../header/Header'
-import AdminAnalytics from '../analytics/AdminAnalytics'
-import TransactionsBarChart from '../transactions/TransactionsBarChart'
-import RenderTables from '../tables/RenderTables'
+import React from "react";
+import Header from "../header/Header";
+import AdminAnalytics from "../analytics/AdminAnalytics";
+import TransactionsBarChart from "../transactions/TransactionsBarChart";
+import RenderTables from "../tables/RenderTables";
 
 export default function RenderHome() {
   return (
@@ -14,5 +14,5 @@ export default function RenderHome() {
         <RenderTables />
       </div>
     </div>
-  )
+  );
 }

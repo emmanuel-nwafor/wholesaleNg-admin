@@ -1,39 +1,127 @@
-"use client"
+"use client";
 
-import { ChevronDown } from 'lucide-react'
-import React from 'react'
-import { usePathname } from 'next/navigation'
+import React, { useEffect, useRef, useState } from "react";
+import { ChevronDown, LogOut, Settings, User } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const pathToTitle: Record<string, string> = {
-  '/': 'Dashboard',
-  '/management/product-management': 'Products Management',
-  '/management/category-management': 'Category Management',
-  '/starter-packs': 'Starter Packs',
-  '/transactions': 'Transactions',
-  '/management/users-management': 'Users Management',
-  '/requests': 'Verification Request',
-  '/management/report-management': 'Report Management',
-  '/management/communication-management': 'Communication Management',
-  '/management/banner-management': 'Banners Management',
-  '/settings': 'Settings',
-}
+  "/": "Dashboard",
+  "/management/product-management": "Products Management",
+  "/management/category-management": "Category Management",
+  "/starter-packs": "Starter Packs",
+  "/transactions": "Transactions",
+  "/management/users-management": "Users Management",
+  "/requests": "Verification Request",
+  "/management/report-management": "Report Management",
+  "/management/communication-management": "Communication Management",
+  "/management/banner-management": "Banners Management",
+  "/settings": "Settings",
+};
 
 export default function Header() {
-  const pathname = usePathname()
-  const title = pathToTitle[pathname] || 'Dashboard'
+  const pathname = usePathname();
+  const title = pathToTitle[pathname ?? ""] ?? "Dashboard";
+
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, []);
 
   return (
-    <div className="fixed top-0 left-0 w-full z-40 bg-white shadow-sm p-5 flex md:ml-64 items-center justify-between">
-      <h1 className="font-bold text-sm flex-1">
-        {title}
-      </h1>
-      <div className="flex items-center gap-2 ml-4">
-        <div className="flex items-center gap-2">
-          <img src="https://i.pinimg.com/736x/ed/f2/f0/edf2f0344a86c77a821e9cb711b21ec0.jpg" className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover" alt="profile_image" />
-          <p className="text-xs sm:text-sm truncate max-w-[120px]">Joanna Adeleke</p>
+    <header className=" top-0 left-0 w-full z-20 bg-white shadow-sm">
+      {/* inner container */}
+      <div className="mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:ml-64">
+        <h1 className="font-semibold text-sm sm:text-base min-w-0 flex-1">
+          <span className="block truncate">{title}</span>
+        </h1>
+
+        {/* Profile / dropdown */}
+        <div className="mt-4 flex items-center" ref={menuRef}>
+          <button
+            aria-haspopup="true"
+            aria-expanded={open}
+            onClick={() => setOpen((s) => !s)}
+            className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-slate-300"
+            type="button"
+          >
+            <img
+              src="https://i.pinimg.com/736x/ed/f2/f0/edf2f0344a86c77a821e9cb711b21ec0.jpg"
+              alt="profile"
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover"
+            />
+            {/* name hidden on very small screens */}
+            <span className="hidden sm:inline-block text-sm font-medium text-slate-700 max-w-[160px] truncate">
+              Joanna Adeleke
+            </span>
+            <ChevronDown className="w-4 h-4 text-slate-600" />
+          </button>
+
+          {/* Dropdown */}
+          {open && (
+            <div
+              role="menu"
+              aria-label="Profile menu"
+              className="absolute right-4 md:right-6 mt-12 w-48 bg-white rounded-md shadow-lg border border-slate-200 overflow-hidden"
+            >
+              <ul className="py-1">
+                <li>
+                  <a
+                    href="/profile"
+                    role="menuitem"
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-slate-50"
+                    onClick={() => setOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Profile</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/settings"
+                    role="menuitem"
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-slate-50"
+                    onClick={() => setOpen(false)}
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Settings</span>
+                  </a>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setOpen(false);
+                      /* add logout logic here */
+                    }}
+                    className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm hover:bg-slate-50"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Log out</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
-        <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
       </div>
-    </div>
-  )
+    </header>
+  );
 }

@@ -1,11 +1,38 @@
-import React from 'react'
-import { ArrowRight, Eye } from 'lucide-react'
+import React from "react";
+import { ArrowRight, Eye } from "lucide-react";
 
 const mockProducts = [
-  { id: 1, imageUrl: "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg", name: 'Start', date: 'End Date -12/09/2025', price: '₦5,000', device: 'Mobile', status: "Successful" },
-  { id: 2, imageUrl: "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg", name: 'Start', date: 'End Date -12/09/2025', price: '₦5,000', device: 'Mobile', status: "Successful" },
-  { id: 3, imageUrl: "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg", name: 'Start', date: 'End Date -12/09/2025', price: '₦5,000', device: 'Mobile', status: "Successful" },
-]
+  {
+    id: 1,
+    imageUrl:
+      "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg",
+    name: "Start",
+    date: "End Date -12/09/2025",
+    price: "₦5,000",
+    device: "Mobile",
+    status: "Successful",
+  },
+  {
+    id: 2,
+    imageUrl:
+      "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg",
+    name: "Start",
+    date: "End Date -12/09/2025",
+    price: "₦5,000",
+    device: "Mobile",
+    status: "Successful",
+  },
+  {
+    id: 3,
+    imageUrl:
+      "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg",
+    name: "Start",
+    date: "End Date -12/09/2025",
+    price: "₦5,000",
+    device: "Mobile",
+    status: "Successful",
+  },
+];
 
 export default function Banners() {
   return (
@@ -22,9 +49,15 @@ export default function Banners() {
         <table className="w-full min-w-[400px]">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Banner Title</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Device</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Banner Title
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Device
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -32,11 +65,19 @@ export default function Banners() {
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="px-4 py-4">
                   <div className="flex items-center">
-                    <div className='flex items-center'>
-                      <img src={product.imageUrl} alt="banner" className='h-10 w-10 rounded-lg mr-3' />
+                    <div className="flex items-center">
+                      <img
+                        src={product.imageUrl}
+                        alt="banner"
+                        className="h-10 w-10 rounded-lg mr-3"
+                      />
                       <div>
-                         <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                         <div className="text-[12px] text-gray-500">{product.date}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {product.name}
+                        </div>
+                        <div className="text-[12px] text-gray-500">
+                          {product.date}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -45,7 +86,7 @@ export default function Banners() {
                   <div>{product.device}</div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                  <span className='text-[10px] px-1 py-1 bg-green-100 text-green-400 rounded-2xl transition'>
+                  <span className="text-[10px] px-1 py-1 bg-green-100 text-green-400 rounded-2xl transition">
                     {product.status}
                   </span>
                 </td>
@@ -55,5 +96,5 @@ export default function Banners() {
         </table>
       </div>
     </div>
-  )
+  );
 }
