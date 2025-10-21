@@ -1,10 +1,15 @@
+import AdminTransactionAnalytics from "@/app/components/analytics/AdminTransactionAnalytics";
+import TransactionsTable from "@/app/components/tables/transactions/TransactionsTable";
 import React from "react";
 
 export default function Transactions() {
   return (
     <>
       <div className="">
-        This is where admins can manage and see all transactions
+        <AdminTransactionAnalytics />
+        <div className="m-6">
+          <TransactionsTable />
+        </div>
       </div>
     </>
   );

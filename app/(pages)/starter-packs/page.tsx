@@ -1,9 +1,12 @@
+import StarterPackTable from "@/app/components/tables/starter-pack/StarterPackTable";
 import React from "react";
 
 export default function StarterPacks() {
   return (
     <>
-      <div className="">This is where admins can manage all starter packs</div>
+      <div className="m-6">
+        <StarterPackTable />
+      </div>
     </>
   );
 }
