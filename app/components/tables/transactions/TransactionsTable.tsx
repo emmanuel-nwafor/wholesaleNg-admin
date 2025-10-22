@@ -162,32 +162,32 @@ export default function TransactionsTable() {
       {/* Header */}
       <div className="p-4 md:p-6 border-b border-gray-200">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h2 className="text-lg md:text-xl font-bold text-gray-900">
-            Transactions
-          </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="relative w-full sm:w-auto sm:max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search starter packs..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-20 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+          </div>
+
+          <button className="p-3 rounded-2xl bg-gray-800 text-white">
+            Search
+          </button>
+        </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search transactions..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
-            </div>
-            <button className="p-2 rounded-xl bg-gray-700 text-white whitespace-nowrap">
-              Search
-            </button>
             <div className="relative">
-              <button className="p-2 border border-gray-300 rounded-xl text-sm flex items-center gap-1">
+              <button className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1">
                 <Calendar size={16} />
                 Date
               </button>
               {/* Date dropdown placeholder */}
             </div>
             <div className="relative">
-              <button className="p-2 border border-gray-300 rounded-xl text-sm flex items-center gap-1">
+              <button className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1">
                 <Filter size={16} />
                 Status
               </button>
