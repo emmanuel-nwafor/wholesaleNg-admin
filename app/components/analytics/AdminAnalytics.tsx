@@ -46,7 +46,7 @@ export default function AdminAnalytics() {
       {loading ? (
         <p className="text-gray-500 m-3">Loading dashboard data...</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 m-3">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 m-3">
           <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
             <div>
               <h3 className="text-sm text-gray-600 mb-1">Total Users</h3>

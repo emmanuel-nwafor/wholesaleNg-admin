@@ -40,12 +40,14 @@ export default function VerificationRequests(): React.JSX.Element {
         <h2 className="text-sm font-bold text-gray-900">
           Verification Requests
         </h2>
-        <button className="flex items-center gap-1 text-blue-600 text-sm">
+        <button className="flex items-center gap-1 text-blue-600 text-sm hover:underline">
           View All
           <ArrowRight size={16} />
         </button>
       </div>
-      <div className="overflow-x-auto">
+
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -70,9 +72,7 @@ export default function VerificationRequests(): React.JSX.Element {
                       <div className="text-sm font-medium text-gray-900">
                         {product.name}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {product.seller}
-                      </div>
+                      <div className="text-sm text-gray-500">{product.seller}</div>
                     </div>
                   </div>
                 </td>
@@ -92,6 +92,42 @@ export default function VerificationRequests(): React.JSX.Element {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Grid */}
+      <div className="md:hidden grid grid-cols-1 gap-4 p-4">
+        {mockProducts.map((product) => (
+          <div
+            key={product.id}
+            className="bg-gray-50 p-4 rounded-xl shadow-sm flex flex-col gap-2"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                <span className="text-xs font-medium">IP</span>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-900">
+                  {product.name}
+                </div>
+                <div className="text-sm text-gray-500">{product.seller}</div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="text-sm text-gray-900">{product.price}</div>
+                <div className="text-sm text-gray-500">{product.moq}</div>
+              </div>
+              <div className="flex gap-2">
+                <button className="px-2 py-1 bg-gray-100 text-red-400 rounded-xl hover:bg-red-200 transition text-xs">
+                  Reject
+                </button>
+                <button className="px-2 py-1 bg-slate-700 text-white rounded-xl hover:bg-slate-500 transition text-xs">
+                  Approve
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

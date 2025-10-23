@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 
 const tabs = [
-  { id: 'all', label: 'All Products' },
   { id: 'pending', label: 'Pending Products' },
   { id: 'approved', label: 'Approved Products' },
   { id: 'rejected', label: 'Rejected Products' },

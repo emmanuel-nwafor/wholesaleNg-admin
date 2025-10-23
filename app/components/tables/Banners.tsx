@@ -54,7 +54,9 @@ export default function Banners(): React.JSX.Element {
           <ArrowRight size={16} />
         </button>
       </div>
-      <div className="overflow-x-auto">
+
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full min-w-[400px]">
           <thead className="bg-gray-50">
             <tr>
@@ -74,28 +76,26 @@ export default function Banners(): React.JSX.Element {
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="px-4 py-4">
                   <div className="flex items-center">
-                    <div className="flex items-center">
-                      <img
-                        src={product.imageUrl}
-                        alt="banner"
-                        className="h-10 w-10 rounded-lg mr-3"
-                      />
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {product.name}
-                        </div>
-                        <div className="text-[12px] text-gray-500">
-                          {product.date}
-                        </div>
+                    <img
+                      src={product.imageUrl}
+                      alt="banner"
+                      className="h-10 w-10 rounded-lg mr-3"
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </div>
+                      <div className="text-[12px] text-gray-500">
+                        {product.date}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div>{product.device}</div>
+                <td className="px-4 py-4 text-sm text-gray-900">
+                  {product.device}
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                  <span className="text-[10px] px-1 py-1 bg-green-100 text-green-400 rounded-2xl transition">
+                <td className="px-4 py-4 text-sm font-medium">
+                  <span className="text-[10px] px-1 py-1 bg-green-100 text-green-400 rounded-2xl">
                     {product.status}
                   </span>
                 </td>
@@ -103,6 +103,38 @@ export default function Banners(): React.JSX.Element {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Grid */}
+      <div className="md:hidden grid grid-cols-1 gap-4 p-4">
+        {mockProducts.map((product) => (
+          <div
+            key={product.id}
+            className="flex flex-col bg-gray-50 p-4 rounded-xl shadow-sm"
+          >
+            <div className="flex items-center mb-2">
+              <img
+                src={product.imageUrl}
+                alt="banner"
+                className="h-12 w-12 rounded-lg mr-3"
+              />
+              <div>
+                <div className="text-sm font-medium text-gray-900">
+                  {product.name}
+                </div>
+                <div className="text-[12px] text-gray-500">{product.date}</div>
+              </div>
+            </div>
+            <div className="flex justify-between text-sm text-gray-900 mb-2">
+              <div>Device: {product.device}</div>
+              <div>
+                <span className="text-[10px] px-2 py-1 bg-green-100 text-green-400 rounded-2xl">
+                  {product.status}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
