@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Search,
   Check,
@@ -33,7 +33,7 @@ const mockTransactions: Transaction[] = [
     status: "Successful",
   },
   {
-    id: "TXN-001",
+    id: "TXN-002",
     buyer: "Johanna Adeke",
     email: "johanna@adeke.com",
     amount: "₦5,000",
@@ -42,7 +42,7 @@ const mockTransactions: Transaction[] = [
     status: "Failed",
   },
   {
-    id: "TXN-001",
+    id: "TXN-003",
     buyer: "Johanna Adeke",
     email: "johanna@adeke.com",
     amount: "₦5,000",
@@ -51,7 +51,7 @@ const mockTransactions: Transaction[] = [
     status: "Successful",
   },
   {
-    id: "TXN-001",
+    id: "TXN-004",
     buyer: "Johanna Adeke",
     email: "johanna@adeke.com",
     amount: "₦5,000",
@@ -60,7 +60,7 @@ const mockTransactions: Transaction[] = [
     status: "Successful",
   },
   {
-    id: "TXN-001",
+    id: "TXN-005",
     buyer: "Johanna Adeke",
     email: "johanna@adeke.com",
     amount: "₦5,000",
@@ -69,7 +69,7 @@ const mockTransactions: Transaction[] = [
     status: "Failed",
   },
   {
-    id: "TXN-001",
+    id: "TXN-006",
     buyer: "Johanna Adeke",
     email: "johanna@adeke.com",
     amount: "₦5,000",
@@ -78,7 +78,7 @@ const mockTransactions: Transaction[] = [
     status: "Successful",
   },
   {
-    id: "TXN-001",
+    id: "TXN-007",
     buyer: "Johanna Adeke",
     email: "johanna@adeke.com",
     amount: "₦5,000",
@@ -87,7 +87,7 @@ const mockTransactions: Transaction[] = [
     status: "Successful",
   },
   {
-    id: "TXN-001",
+    id: "TXN-008",
     buyer: "Johanna Adeke",
     email: "johanna@adeke.com",
     amount: "₦5,000",
@@ -119,24 +119,27 @@ const getStatusIcon = (status: string): React.ReactNode => {
   }
 };
 
-export default function TransactionsTable() {
+export default function TransactionsTable(): React.JSX.Element {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [dateFilter, setDateFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [dateFilter] = useState<string>("");
+  const [statusFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
   const itemsPerPage = 8;
 
-  const filteredTransactions: Transaction[] = mockTransactions.filter(
-    (transaction: Transaction) =>
+  const filteredTransactions = mockTransactions.filter((transaction) => {
+    const matchesSearch =
       transaction.buyer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (dateFilter === "" || transaction.date.includes(dateFilter)) ||
-      (statusFilter === "" || transaction.status === statusFilter)
-  );
+      transaction.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate = dateFilter === "" || transaction.date.includes(dateFilter);
+    const matchesStatus = statusFilter === "" || transaction.status === statusFilter;
 
-  const paginatedTransactions: Transaction[] = filteredTransactions.slice(
+    return matchesSearch && matchesDate && matchesStatus;
+  });
+
+  const paginatedTransactions = filteredTransactions.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -144,7 +147,9 @@ export default function TransactionsTable() {
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
 
   const handlePageChange = (page: number): void => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   const handleRowClick = (transaction: Transaction): void => {
@@ -162,37 +167,31 @@ export default function TransactionsTable() {
       {/* Header */}
       <div className="p-4 md:p-6 border-b border-gray-200">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="relative w-full sm:w-auto sm:max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search starter packs..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-20 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="relative w-full sm:w-auto sm:max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search starter packs..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-20 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+            <button className="p-3 rounded-2xl bg-gray-800 text-white">
+              Search
+            </button>
           </div>
 
-          <button className="p-3 rounded-2xl bg-gray-800 text-white">
-            Search
-          </button>
-        </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative">
-              <button className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1">
-                <Calendar size={16} />
-                Date
-              </button>
-              {/* Date dropdown placeholder */}
-            </div>
-            <div className="relative">
-              <button className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1">
-                <Filter size={16} />
-                Status
-              </button>
-              {/* Status dropdown placeholder */}
-            </div>
+            <button className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1">
+              <Calendar size={16} />
+              Date
+            </button>
+            <button className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1">
+              <Filter size={16} />
+              Status
+            </button>
           </div>
         </div>
       </div>
@@ -202,50 +201,32 @@ export default function TransactionsTable() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">
-                Transaction ID
-              </th>
-              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">
-                Buyer
-              </th>
-              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">
-                Amount (₦)
-              </th>
-              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">
-                Coin Purchased
-              </th>
-              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">
-                Date Purchased
-              </th>
-              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
-              </th>
+              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
+              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">Buyer</th>
+              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">Amount (₦)</th>
+              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">Coin Purchased</th>
+              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">Date Purchased</th>
+              <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {paginatedTransactions.map((transaction: Transaction) => (
-              <tr 
-                key={transaction.id} 
-                className="hover:bg-gray-50 cursor-pointer transition-colors duration-200 ease-in-out" 
+            {paginatedTransactions.map((transaction) => (
+              <tr
+                key={transaction.id}
+                className="hover:bg-gray-50 cursor-pointer transition-colors duration-200 ease-in-out"
                 onClick={() => handleRowClick(transaction)}
               >
                 <td className="px-4 py-4 text-gray-900">{transaction.id}</td>
                 <td className="px-4 py-4">
-                  <div className="font-medium text-gray-900">
-                    {transaction.buyer}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {transaction.email}
-                  </div>
+                  <div className="font-medium text-gray-900">{transaction.buyer}</div>
+                  <div className="text-sm text-gray-500">{transaction.email}</div>
                 </td>
                 <td className="px-4 py-4 text-gray-900">{transaction.amount}</td>
                 <td className="px-4 py-4 text-gray-900">{transaction.coins}</td>
                 <td className="px-4 py-4 text-gray-900">{transaction.date}</td>
                 <td className="px-4 py-4">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                      transaction.status
-                    )}`}
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}
                   >
                     {getStatusIcon(transaction.status)}
                     <span className="ml-1">{transaction.status}</span>
@@ -257,9 +238,9 @@ export default function TransactionsTable() {
         </table>
       </div>
 
-      {/* Mobile & Tablet Grid */}
+      {/* Mobile Grid */}
       <div className="lg:hidden p-4 grid grid-cols-1 gap-4">
-        {paginatedTransactions.map((transaction: Transaction) => (
+        {paginatedTransactions.map((transaction) => (
           <div
             key={transaction.id}
             className="border border-gray-200 rounded-xl p-4 relative cursor-pointer hover:bg-gray-50 transition-all duration-200 ease-in-out"
@@ -267,37 +248,18 @@ export default function TransactionsTable() {
           >
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 text-sm">
-                  {transaction.id}
-                </h3>
+                <h3 className="font-semibold text-gray-900 text-sm">{transaction.id}</h3>
                 <p className="text-xs text-gray-500">{transaction.buyer}</p>
               </div>
             </div>
-
             <div className="text-sm text-gray-700 space-y-1">
-              <div>
-                <span className="font-medium">Email:</span>{" "}
-                {transaction.email}
-              </div>
-              <div>
-                <span className="font-medium">Amount:</span>{" "}
-                {transaction.amount}
-              </div>
-              <div>
-                <span className="font-medium">Coins:</span>{" "}
-                {transaction.coins}
-              </div>
-              <div>
-                <span className="font-medium">Date:</span>{" "}
-                {transaction.date}
-              </div>
+              <div><span className="font-medium">Email:</span> {transaction.email}</div>
+              <div><span className="font-medium">Amount:</span> {transaction.amount}</div>
+              <div><span className="font-medium">Coins:</span> {transaction.coins}</div>
+              <div><span className="font-medium">Date:</span> {transaction.date}</div>
               <div>
                 <span className="font-medium">Status:</span>{" "}
-                <span
-                  className={`inline-flex items-center ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                    transaction.status
-                  )}`}
-                >
+                <span className={`inline-flex items-center ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
                   {getStatusIcon(transaction.status)}
                   <span className="ml-1">{transaction.status}</span>
                 </span>
@@ -310,10 +272,17 @@ export default function TransactionsTable() {
       {/* Modal */}
       {selectedTransaction && isModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out">
-          <div className={`bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto transform transition-all duration-300 ease-in-out ${isModalOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+          <div
+            className={`bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto transform transition-all duration-300 ease-in-out ${
+              isModalOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
+            }`}
+          >
             <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-bold text-gray-900">Transaction Details</h3>
-              <button onClick={closeModal} className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+              <button
+                onClick={closeModal}
+                className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
                 <CloseIcon size={20} />
               </button>
             </div>
@@ -345,9 +314,7 @@ export default function TransactionsTable() {
               <div>
                 <span className="font-medium text-gray-700">Status:</span>
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                    selectedTransaction.status
-                  )}`}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedTransaction.status)}`}
                 >
                   {getStatusIcon(selectedTransaction.status)}
                   <span className="ml-1">{selectedTransaction.status}</span>

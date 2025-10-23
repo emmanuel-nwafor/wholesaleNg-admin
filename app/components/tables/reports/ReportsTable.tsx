@@ -13,13 +13,29 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-const mockReports = [
+// Define the report type
+interface Report {
+  id: string;
+  reporterImage: string;
+  reporterName: string;
+  reporterType: string;
+  reportedImage: string;
+  reportedName: string;
+  reportedType: string;
+  reason: string;
+  dateSubmitted: string;
+  status: "Pending" | "Resolved" | "Rejected" | string;
+}
+
+const mockReports: Report[] = [
   {
     id: "RPT-101",
-    reporterImage: "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
+    reporterImage:
+      "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
     reporterName: "Johanna Adelek",
     reporterType: "Buyer",
-    reportedImage: "https://i.pinimg.com/736x/33/4d/84/334d8445375f2996cebc78d266ea7ef4.jpg",
+    reportedImage:
+      "https://i.pinimg.com/736x/33/4d/84/334d8445375f2996cebc78d266ea7ef4.jpg",
     reportedName: "ABSOLUTE Stores",
     reportedType: "Store",
     reason: "Scam/Fraud",
@@ -27,11 +43,13 @@ const mockReports = [
     status: "Pending",
   },
   {
-    id: "RPT-101",
-    reporterImage: "https://i.pinimg.com/736x/79/ae/7a/79ae7ad683ac85aac7d0a443db553057.jpg",
+    id: "RPT-102",
+    reporterImage:
+      "https://i.pinimg.com/736x/79/ae/7a/79ae7ad683ac85aac7d0a443db553057.jpg",
     reporterName: "OML Electronics",
     reporterType: "Store",
-    reportedImage: "https://i.pinimg.com/736x/11/d8/b4/11d8b417be2522a3dd88930fac4b1f6c.jpg",
+    reportedImage:
+      "https://i.pinimg.com/736x/11/d8/b4/11d8b417be2522a3dd88930fac4b1f6c.jpg",
     reportedName: "Johanna Adelek",
     reportedType: "Buyer",
     reason: "Scam/Fraud",
@@ -39,11 +57,13 @@ const mockReports = [
     status: "Resolved",
   },
   {
-    id: "RPT-101",
-    reporterImage: "https://i.pinimg.com/736x/36/0b/4f/360b4fa69adc5b1db159cecb4ce467bc.jpg",
+    id: "RPT-103",
+    reporterImage:
+      "https://i.pinimg.com/736x/36/0b/4f/360b4fa69adc5b1db159cecb4ce467bc.jpg",
     reporterName: "Johanna Adelek",
     reporterType: "Buyer",
-    reportedImage: "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
+    reportedImage:
+      "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
     reportedName: "God's Grace Enterprise",
     reportedType: "Store",
     reason: "Scam/Fraud",
@@ -65,7 +85,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: string): React.JSX.Element | null => {
   switch (status) {
     case "Pending":
       return <Clock className="w-3 h-3" />;
@@ -114,22 +134,6 @@ const overlayVariants = {
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.15 },
-  },
-};
-
-const modalVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { duration: 0.3, ease: "easeOut" },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.9,
-    y: 20,
     transition: { duration: 0.15 },
   },
 };

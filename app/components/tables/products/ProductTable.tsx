@@ -11,7 +11,21 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const mockProducts = [
+// Define interface for product
+interface Product {
+  id: string;
+  image: string;
+  name: string;
+  seller: string;
+  productId: string;
+  categories: string;
+  type: string;
+  price: string;
+  moq: string;
+  status: "Approved" | "Pending" | "Rejected" | string;
+}
+
+const mockProducts: Product[] = [
   {
     id: "PRD-001",
     image:
@@ -53,7 +67,8 @@ const mockProducts = [
   },
 ];
 
-const getStatusColor = (status: string) => {
+// Type for status color helper
+const getStatusColor = (status: string): string => {
   switch (status) {
     case "Approved":
       return "bg-green-100 text-green-800";
@@ -66,7 +81,8 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getStatusIcon = (status: string) => {
+// Type for status icon helper
+const getStatusIcon = (status: string): React.JSX.Element | null => {
   switch (status) {
     case "Approved":
       return <Check className="w-3 h-3" />;
@@ -79,9 +95,9 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-export default function ProductTable() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+export default function ProductTable(): React.JSX.Element {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 8;
@@ -99,7 +115,7 @@ export default function ProductTable() {
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number): void => {
     setCurrentPage(page);
   };
 

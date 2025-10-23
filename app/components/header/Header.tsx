@@ -22,22 +22,24 @@ export default function Header() {
   const pathname = usePathname();
   const title = pathToTitle[pathname ?? ""] ?? "Dashboard";
 
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [open, setOpen] = useState<boolean>(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
+  // Close dropdown on outside click or Escape key
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
+    const handleClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
-    }
-    function handleEsc(e: KeyboardEvent) {
+    };
+
+    const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
-    }
+    };
 
     document.addEventListener("mousedown", handleClick);
     document.addEventListener("keydown", handleEsc);
+
     return () => {
       document.removeEventListener("mousedown", handleClick);
       document.removeEventListener("keydown", handleEsc);
@@ -45,15 +47,15 @@ export default function Header() {
   }, []);
 
   return (
-    <header className=" top-0 left-0 w-full z-20 bg-white shadow-sm">
-      {/* inner container */}
+    <header className="top-0 left-0 w-full z-20 bg-white shadow-sm">
+      {/* Inner container */}
       <div className="mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:ml-64">
         <h1 className="font-semibold text-sm sm:text-base min-w-0 flex-1">
           <span className="block truncate">{title}</span>
         </h1>
 
         {/* Profile / dropdown */}
-        <div className="mt-4 flex items-center" ref={menuRef}>
+        <div className="mt-4 flex items-center relative" ref={menuRef}>
           <button
             aria-haspopup="true"
             aria-expanded={open}
@@ -66,7 +68,6 @@ export default function Header() {
               alt="profile"
               className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover"
             />
-            {/* name hidden on very small screens */}
             <span className="hidden sm:inline-block text-sm font-medium text-slate-700 max-w-[160px] truncate">
               Joanna Adeleke
             </span>
@@ -78,7 +79,7 @@ export default function Header() {
             <div
               role="menu"
               aria-label="Profile menu"
-              className="absolute right-4 md:right-6 mt-12 w-48 bg-white rounded-md shadow-lg border border-slate-200 overflow-hidden"
+              className="absolute right-0 mt-12 w-48 bg-white rounded-md shadow-lg border border-slate-200 overflow-hidden"
             >
               <ul className="py-1">
                 <li>
@@ -109,7 +110,7 @@ export default function Header() {
                     role="menuitem"
                     onClick={() => {
                       setOpen(false);
-                      /* add logout logic here */
+                      // logout logic here
                     }}
                     className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm hover:bg-slate-50"
                   >

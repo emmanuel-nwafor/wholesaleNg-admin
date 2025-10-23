@@ -31,7 +31,6 @@ interface User {
 
 export default function UserDetailsPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [user, setUser] = useState<User>({
     fullName: "Esther Howard",
     dateOfBirth: "5-11-2000",

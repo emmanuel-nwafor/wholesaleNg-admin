@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -13,14 +13,29 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-const mockRequests = [
+interface RequestItem {
+  id: string;
+  storeImage: string;
+  storeName: string;
+  email: string;
+  fullName: string;
+  userImage: string;
+  nni: string;
+  cacNo: string;
+  dateSubmitted: string;
+  status: "Approved" | "Pending" | "Rejected" | string;
+}
+
+const mockRequests: RequestItem[] = [
   {
     id: "VR-001",
-    storeImage: "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
+    storeImage:
+      "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
     storeName: "ABSOLUTE Stores",
     email: "estherhoward82@gmail.com",
     fullName: "Esther Howard",
-    userImage: "https://i.pinimg.com/736x/11/d8/b4/11d8b417be2522a3dd88930fac4b1f6c.jpg",
+    userImage:
+      "https://i.pinimg.com/736x/11/d8/b4/11d8b417be2522a3dd88930fac4b1f6c.jpg",
     nni: "1234567890",
     cacNo: "987654321",
     dateSubmitted: "09-20-2025, 11:00 PM",
@@ -28,11 +43,13 @@ const mockRequests = [
   },
   {
     id: "VR-002",
-    storeImage: "https://i.pinimg.com/736x/33/4d/84/334d8445375f2996cebc78d266ea7ef4.jpg",
+    storeImage:
+      "https://i.pinimg.com/736x/33/4d/84/334d8445375f2996cebc78d266ea7ef4.jpg",
     storeName: "ABSOLUTE Stores",
     email: "estherhoward82@gmail.com",
     fullName: "Esther Howard",
-    userImage: "https://i.pinimg.com/736x/33/4d/84/334d8445375f2996cebc78d266ea7ef4.jpg",
+    userImage:
+      "https://i.pinimg.com/736x/33/4d/84/334d8445375f2996cebc78d266ea7ef4.jpg",
     nni: "1234567890",
     cacNo: "987654321",
     dateSubmitted: "09-20-2025, 11:00 PM",
@@ -40,11 +57,13 @@ const mockRequests = [
   },
   {
     id: "VR-003",
-    storeImage: "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
+    storeImage:
+      "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
     storeName: "ABSOLUTE Stores",
     email: "estherhoward82@gmail.com",
     fullName: "Esther Howard",
-    userImage: "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
+    userImage:
+      "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
     nni: "1234567890",
     cacNo: "987654321",
     dateSubmitted: "09-20-2025, 11:00 PM",
@@ -52,11 +71,13 @@ const mockRequests = [
   },
   {
     id: "VR-004",
-    storeImage: "https://i.pinimg.com/736x/79/ae/7a/79ae7ad683ac85aac7d0a443db553057.jpg",
+    storeImage:
+      "https://i.pinimg.com/736x/79/ae/7a/79ae7ad683ac85aac7d0a443db553057.jpg",
     storeName: "ABSOLUTE Stores",
     email: "estherhoward82@gmail.com",
     fullName: "Esther Howard",
-    userImage: "https://i.pinimg.com/736x/79/ae/7a/79ae7ad683ac85aac7d0a443db553057.jpg",
+    userImage:
+      "https://i.pinimg.com/736x/79/ae/7a/79ae7ad683ac85aac7d0a443db553057.jpg",
     nni: "1234567890",
     cacNo: "987654321",
     dateSubmitted: "09-20-2025, 11:00 PM",
@@ -64,11 +85,13 @@ const mockRequests = [
   },
   {
     id: "VR-005",
-    storeImage: "https://i.pinimg.com/736x/36/0b/4f/360b4fa69adc5b1db159cecb4ce467bc.jpg",
+    storeImage:
+      "https://i.pinimg.com/736x/36/0b/4f/360b4fa69adc5b1db159cecb4ce467bc.jpg",
     storeName: "ABSOLUTE Stores",
     email: "estherhoward82@gmail.com",
     fullName: "Esther Howard",
-    userImage: "https://i.pinimg.com/736x/36/0b/4f/360b4fa69adc5b1db159cecb4ce467bc.jpg",
+    userImage:
+      "https://i.pinimg.com/736x/36/0b/4f/360b4fa69adc5b1db159cecb4ce467bc.jpg",
     nni: "1234567890",
     cacNo: "987654321",
     dateSubmitted: "09-20-2025, 11:00 PM",
@@ -76,7 +99,7 @@ const mockRequests = [
   },
 ];
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: string): string => {
   switch (status) {
     case "Approved":
       return "bg-green-100 text-green-800";
@@ -89,7 +112,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: string): React.ReactNode => {
   switch (status) {
     case "Approved":
       return <Check className="w-3 h-3" />;
@@ -102,79 +125,21 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-const rowVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.3,
-      delay: i * 0.1,
-    },
-  }),
-};
-
-const dropdownVariants = {
-  hidden: { opacity: 0, scale: 0.95, y: -10 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { duration: 0.2 },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.95,
-    y: -10,
-    transition: { duration: 0.15 },
-  },
-};
-
-const overlayVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.2 },
-  },
-  exit: {
-    opacity: 0,
-    transition: { duration: 0.15 },
-  },
-};
-
-const modalVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { 
-      type: "spring", 
-      stiffness: 300, 
-      damping: 30 
-    },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.9,
-    y: 20,
-    transition: { duration: 0.15 },
-  },
-};
-
-export default function RequestsTable() {
+export default function RequestsTable(): React.JSX.Element {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(
+    null
+  );
   const itemsPerPage = 8;
 
   const filteredRequests = mockRequests.filter(
-    (request) =>
-      request.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (r) =>
+      r.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const paginatedRequests = filteredRequests.slice(
@@ -184,39 +149,43 @@ export default function RequestsTable() {
 
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number): void => {
     setCurrentPage(page);
   };
 
-  const handleViewDetails = (request: any, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const handleViewDetails = (
+    request: RequestItem,
+    e?: React.MouseEvent
+  ): void => {
+    e?.stopPropagation();
     setSelectedRequest(request);
     setOpenModal(true);
     setOpenDropdown(null);
   };
 
-  const handleApprove = () => {
-    // Handle approve logic
+  const handleApprove = (): void => {
     setOpenModal(false);
   };
 
-  const handleReject = () => {
-    // Handle reject logic
+  const handleReject = (): void => {
     setOpenModal(false);
   };
 
-  const handleDropdownToggle = (id: string, e: React.MouseEvent) => {
+  const handleDropdownToggle = (id: string, e: React.MouseEvent): void => {
     e.stopPropagation();
     setOpenDropdown(openDropdown === id ? null : id);
   };
 
-  const handleActionClick = (e: React.MouseEvent) => {
+  const handleActionClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
   };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (openDropdown && !(e.target as Element).closest('.dropdown-menu')) {
+      if (
+        openDropdown &&
+        !(e.target as HTMLElement).closest(".dropdown-menu")
+      ) {
         setOpenDropdown(null);
       }
     };
@@ -297,7 +266,7 @@ export default function RequestsTable() {
                     initial="hidden"
                     animate="visible"
                     exit="hidden"
-                    variants={rowVariants}
+                    // variants={rowVariants}
                     custom={i}
                   >
                     <td className="px-6 py-4">
@@ -343,7 +312,7 @@ export default function RequestsTable() {
                         {openDropdown === request.id && (
                           <motion.div 
                             className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-20 dropdown-menu"
-                            variants={dropdownVariants}
+                            // variants={dropdownVariants}
                             initial="hidden"
                             animate="visible"
                             exit="exit"
@@ -420,7 +389,7 @@ export default function RequestsTable() {
                   {openDropdown === request.id && (
                     <motion.div 
                       className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 dropdown-menu top-full" 
-                      variants={dropdownVariants}
+                      // variants={dropdownVariants}
                       initial="hidden"
                       animate="visible"
                       exit="exit"
@@ -532,7 +501,7 @@ export default function RequestsTable() {
             <motion.div 
               className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" 
               onClick={() => setOpenModal(false)}
-              variants={overlayVariants}
+              // variants={overlayVariants}
               initial="hidden"
               animate="visible"
               exit="exit"

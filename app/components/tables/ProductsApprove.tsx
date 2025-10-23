@@ -1,7 +1,15 @@
 import React from "react";
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-const mockProducts = [
+interface Product {
+  id: number;
+  name: string;
+  seller: string;
+  price: string;
+  moq: string;
+}
+
+const mockProducts: Product[] = [
   {
     id: 1,
     name: "iPhone 16 Pro Max",
@@ -25,7 +33,7 @@ const mockProducts = [
   },
 ];
 
-export default function ProductsApprove() {
+export default function ProductsApprove(): React.JSX.Element {
   return (
     <div className="m-4 bg-white rounded-3xl border border-gray-200 overflow-hidden">
       <div className="flex justify-between items-center p-4">

@@ -13,7 +13,24 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-const mockBanners = [
+interface Banner {
+  id: string;
+  title: string;
+  type: string;
+  device: string;
+  date: string;
+  status: string;
+}
+
+interface FormData {
+  title: string;
+  type: string;
+  device: string;
+  startDate: string;
+  endDate: string;
+}
+
+const mockBanners: Banner[] = [
   {
     id: "BAN-101",
     title: "Normal",
@@ -138,26 +155,13 @@ const overlayVariants = {
   },
 };
 
-const modalVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { duration: 0.3, ease: "easeOut" },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.9,
-    y: 20,
-    transition: { duration: 0.15 },
-  },
-};
-
 const parseDate = (dateStr: string) => {
   if (!dateStr) return "";
   const [month, day, year] = dateStr.split("-").map(Number);
-  return `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+  if (!month || !day || !year) return "";
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
 };
 
 const formatDisplayDate = (isoDate: string) => {
@@ -167,12 +171,12 @@ const formatDisplayDate = (isoDate: string) => {
 };
 
 export default function BannersTable() {
-  const [banners, setBanners] = useState(mockBanners);
+  const [banners, setBanners] = useState<Banner[]>(mockBanners);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     title: "",
     type: "",
     device: "",
@@ -201,14 +205,7 @@ export default function BannersTable() {
     setCurrentPage(page);
   };
 
-  const handleAdd = () => {
-    setFormData({ title: "", type: "", device: "", startDate: "", endDate: "" });
-    setIsAdd(true);
-    setEditingId(null);
-    setOpenModal(true);
-  };
-
-  const handleEdit = (banner: any, e?: React.MouseEvent) => {
+  const handleEdit = (banner: Banner, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     let ed = "";
     if (banner.date?.startsWith("End Date:")) {
@@ -231,12 +228,14 @@ export default function BannersTable() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isAdd) {
-      const newBanner = {
+      const newBanner: Banner = {
         id: `BAN-${Date.now() % 10000 + 101}`,
         title: formData.title,
         type: formData.type,
         device: formData.device,
-        date: formData.endDate ? `End Date: ${formatDisplayDate(formData.endDate)}` : "",
+        date: formData.endDate
+          ? `End Date: ${formatDisplayDate(formData.endDate)}`
+          : "",
         status: "Active",
       };
       setBanners([...banners, newBanner]);
@@ -249,18 +248,13 @@ export default function BannersTable() {
                 title: formData.title,
                 type: formData.type,
                 device: formData.device,
-                date: formData.endDate ? `End Date: ${formatDisplayDate(formData.endDate)}` : b.date,
+                date: formData.endDate
+                  ? `End Date: ${formatDisplayDate(formData.endDate)}`
+                  : b.date,
               }
             : b
         )
       );
-    }
-    setOpenModal(false);
-  };
-
-  const handleDelete = () => {
-    if (editingId) {
-      setBanners(banners.filter((b) => b.id !== editingId));
     }
     setOpenModal(false);
   };

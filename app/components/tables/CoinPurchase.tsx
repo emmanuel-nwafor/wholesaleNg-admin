@@ -1,7 +1,16 @@
 import React from "react";
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-const mockProducts = [
+interface Product {
+  id: number;
+  name: string;
+  email: string;
+  price: string;
+  amount: string;
+  status: string;
+}
+
+const mockProducts: Product[] = [
   {
     id: 1,
     name: "Joanna Adeleke",
@@ -28,7 +37,7 @@ const mockProducts = [
   },
 ];
 
-export default function CoinPurchase() {
+export default function CoinPurchase(): React.JSX.Element {
   return (
     <div className="m-4 bg-white rounded-3xl border border-gray-200 overflow-hidden">
       <div className="flex justify-between items-center p-4">

@@ -1,7 +1,17 @@
 import React from "react";
 import { ArrowRight, Eye } from "lucide-react";
 
-const mockProducts = [
+interface Product {
+  id: number;
+  imageUrl: string;
+  name: string;
+  date: string;
+  price: string;
+  device: string;
+  status: string;
+}
+
+const mockProducts: Product[] = [
   {
     id: 1,
     imageUrl:
@@ -34,7 +44,7 @@ const mockProducts = [
   },
 ];
 
-export default function Banners() {
+export default function Banners(): React.JSX.Element {
   return (
     <div className="m-4 bg-white rounded-3xl border border-gray-200 overflow-hidden">
       <div className="flex justify-between items-center p-4">

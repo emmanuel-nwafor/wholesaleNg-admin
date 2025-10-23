@@ -1,7 +1,7 @@
 "use client";
 
-import NextLink from "next/link";
-import { useState } from "react";
+import Link from "next/link";
+import { useState, ReactNode } from "react";
 import {
   Home,
   Package,
@@ -21,7 +21,7 @@ import {
 interface MenuItem {
   label: string;
   href: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 const MENU_ITEMS: MenuItem[] = [
@@ -91,14 +91,14 @@ export default function Sidebar() {
         <ul className="space-y-2">
           {MENU_ITEMS.map((item) => (
             <li key={item.label}>
-              <NextLink
+              <Link
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-all duration-200 hover:bg-white hover:text-black active:bg-white active:text-black"
               >
                 {item.icon}
                 <span>{item.label}</span>
-              </NextLink>
+              </Link>
             </li>
           ))}
         </ul>
@@ -111,7 +111,7 @@ export default function Sidebar() {
       {/* Mobile Menu Button */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => setIsOpen((prev) => !prev)}
           className="p-2 text-white bg-slate-800 rounded-md shadow-md"
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -126,7 +126,7 @@ export default function Sidebar() {
       >
         {/* Overlay */}
         <div
-          className="absolute inset-0 bg-opacity-50"
+          className="absolute inset-0 bg-black bg-opacity-50"
           onClick={() => setIsOpen(false)}
         />
 
