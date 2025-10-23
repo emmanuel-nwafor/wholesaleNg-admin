@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface Product {
   id: number;
@@ -50,7 +50,6 @@ export default function Banners(): React.JSX.Element {
       <div className="flex justify-between items-center p-4">
         <h2 className="text-sm font-bold text-gray-900">Active Banners</h2>
         <button className="flex items-center gap-1 text-blue-600 text-sm hover:underline">
-          <Eye size={16} />
           View All
           <ArrowRight size={16} />
         </button>
