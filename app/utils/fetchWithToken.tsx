@@ -14,14 +14,21 @@ export async function fetchWithToken<T = unknown>(
     process.env.NEXT_PUBLIC_BACKEND_URL ??
     "https://wholesalenaija-backend-production.up.railway.app/api";
 
+  const isFormData = options.body instanceof FormData;
+
+  const headers: Record<string, string> = {};
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  Object.assign(headers, options.headers);
+
   try {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(options.headers ?? {}),
-      },
+      headers,
     });
 
     if (!res.ok) {

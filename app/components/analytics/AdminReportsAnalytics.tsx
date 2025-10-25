@@ -6,7 +6,7 @@ export default function AdminReportsAnalytics() {
     <div className="m-4">
       <h1 className="text-xl font-bold mb-6 m-3">Reports</h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 m-3">
+      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 m-3">
         <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
           <div className="">
             <h3 className="text-sm text-gray-600 mb-1">All Reports</h3>

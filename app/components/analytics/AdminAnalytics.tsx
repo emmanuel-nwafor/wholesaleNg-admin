@@ -41,7 +41,18 @@ export default function AdminAnalytics(): React.JSX.Element {
       <h1 className="text-xl font-bold mb-6 m-3">Dashboard</h1>
 
       {loading ? (
-        <p className="text-gray-500 m-3">Loading dashboard data...</p>
+        <div className="m-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 m-3">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-center items-center"
+              >
+                <span className="text-gray-600">Loading...</span>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 m-3">
           <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
