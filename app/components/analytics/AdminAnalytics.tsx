@@ -1,33 +1,30 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Users,
-  Coins,
-  AlertTriangleIcon,
-  LucidePiggyBank,
-} from "lucide-react";
+import { Users, Coins, AlertTriangleIcon, LucidePiggyBank } from "lucide-react";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
-export default function AdminAnalytics() {
-  const [data, setData] = useState({
+interface DashboardData {
+  totalUsers: number;
+  totalCoinsPurchased: number;
+  pendingReports: number;
+  totalRevenue: number;
+}
+
+export default function AdminAnalytics(): React.JSX.Element {
+  const [data, setData] = useState<DashboardData>({
     totalUsers: 0,
     totalCoinsPurchased: 0,
     pendingReports: 0,
     totalRevenue: 0,
   });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchKpis = async () => {
+    const fetchKpis = async (): Promise<void> => {
       try {
-        const res = await fetch(
-          "https://wholesalenaija-backend-production.up.railway.app/api/admin/dashboard"
-        );
-        if (!res.ok) {
-          throw new Error("Failed to fetch admin KPIs");
-        }
-        const result = await res.json();
+        const result = await fetchWithToken<DashboardData>("/admin/dashboard");
         setData(result);
       } catch (error) {
         console.error(error);
@@ -50,18 +47,14 @@ export default function AdminAnalytics() {
           <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
             <div>
               <h3 className="text-sm text-gray-600 mb-1">Total Users</h3>
-              <p className="text-2xl font-bold text-gray-900">
-                {data.totalUsers}
-              </p>
+              <p className="text-2xl font-bold text-gray-900">{data.totalUsers}</p>
             </div>
             <Users className="w-8 h-8 text-gray-600" />
           </div>
 
           <div className="bg-white rounded-2xl p-10 border border-gray-100 flex justify-between items-center">
             <div>
-              <h3 className="text-sm text-gray-600 mb-1">
-                Total Coins Purchased
-              </h3>
+              <h3 className="text-sm text-gray-600 mb-1">Total Coins Purchased</h3>
               <p className="text-2xl font-bold text-gray-900">
                 {data.totalCoinsPurchased}
               </p>

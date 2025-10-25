@@ -1,24 +1,28 @@
 "use client"
 
-import React, { useState } from 'react'
+import React from 'react'
 
 const tabs = [
+  { id: 'all', label: 'All Products' },
   { id: 'pending', label: 'Pending Products' },
   { id: 'approved', label: 'Approved Products' },
   { id: 'rejected', label: 'Rejected Products' },
 ]
 
-export default function SwitchTabsNav() {
-  const [activeTab, setActiveTab] = useState('all')
+interface SwitchTabsNavProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}
 
+export default function SwitchTabsNav({ activeTab, onTabChange }: SwitchTabsNavProps) {
   return (
     <div className="bg-white border-gray-200 px-6 py-4 m-2">
       <div className="flex space-x-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+            onClick={() => onTabChange(tab.id)}
+            className={`px-4 py-2 text-[11px] sm:text-xs md:text-sm font-medium rounded-t-lg transition-colors ${
               activeTab === tab.id
                 ? 'border-b-2 border-gray-500 text-gray-600'
                 : 'text-gray-500 hover:text-gray-700 border-b-2 border-transparent'
