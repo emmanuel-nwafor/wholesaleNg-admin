@@ -3,7 +3,7 @@ import React from 'react'
 export default function LoginPage() {
   return (
     <div>
-      Login page
+      This is the login page for admins
     </div>
   )
 }

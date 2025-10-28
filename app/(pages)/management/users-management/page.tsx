@@ -5,14 +5,12 @@ import React from "react";
 
 export default function UsersManagement() {
   return (
-    <>
-      <div className="">
-        <AdminUserAnalytics />
-        <UsersSwitchTabNav />
-        <div className="m-6">
-          <UsersTable />
-        </div>
+    <div className="space-y-6">
+      <AdminUserAnalytics />
+      <UsersSwitchTabNav />
+      <div className="m-6">
+        <UsersTable />
       </div>
-    </>
+    </div>
   );
 }

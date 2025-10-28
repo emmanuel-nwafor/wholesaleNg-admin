@@ -1,6 +1,8 @@
+// Updated TransactionsTable.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Search,
   Check,
@@ -9,8 +11,25 @@ import {
   ChevronRight,
   Calendar,
   Filter,
-  X as CloseIcon,
+  TextSelectionIcon,
 } from "lucide-react";
+import { fetchWithToken } from "../../../utils/fetchWithToken";
+import TransactionModal from "../../modals/TransactionsModal";
+
+interface ApiTransaction {
+  _id: string;
+  userId: string;
+  type: "CREDIT" | "DEBIT";
+  reason: string;
+  amount: number;
+  createdAt: string;
+}
+
+interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+}
 
 interface Transaction {
   id: string;
@@ -20,82 +39,8 @@ interface Transaction {
   coins: number;
   date: string;
   status: string;
+  image: string;
 }
-
-const mockTransactions: Transaction[] = [
-  {
-    id: "TXN-001",
-    buyer: "Johanna Adeke",
-    email: "johanna@adeke.com",
-    amount: "₦5,000",
-    coins: 50,
-    date: "12-09-2025 19:00 PM",
-    status: "Successful",
-  },
-  {
-    id: "TXN-002",
-    buyer: "Johanna Adeke",
-    email: "johanna@adeke.com",
-    amount: "₦5,000",
-    coins: 50,
-    date: "12-09-2025 19:00 PM",
-    status: "Failed",
-  },
-  {
-    id: "TXN-003",
-    buyer: "Johanna Adeke",
-    email: "johanna@adeke.com",
-    amount: "₦5,000",
-    coins: 50,
-    date: "12-09-2025 19:00 PM",
-    status: "Successful",
-  },
-  {
-    id: "TXN-004",
-    buyer: "Johanna Adeke",
-    email: "johanna@adeke.com",
-    amount: "₦5,000",
-    coins: 50,
-    date: "12-09-2025 19:00 PM",
-    status: "Successful",
-  },
-  {
-    id: "TXN-005",
-    buyer: "Johanna Adeke",
-    email: "johanna@adeke.com",
-    amount: "₦5,000",
-    coins: 50,
-    date: "12-09-2025 19:00 PM",
-    status: "Failed",
-  },
-  {
-    id: "TXN-006",
-    buyer: "Johanna Adeke",
-    email: "johanna@adeke.com",
-    amount: "₦5,000",
-    coins: 50,
-    date: "12-09-2025 19:00 PM",
-    status: "Successful",
-  },
-  {
-    id: "TXN-007",
-    buyer: "Johanna Adeke",
-    email: "johanna@adeke.com",
-    amount: "₦5,000",
-    coins: 50,
-    date: "12-09-2025 19:00 PM",
-    status: "Successful",
-  },
-  {
-    id: "TXN-008",
-    buyer: "Johanna Adeke",
-    email: "johanna@adeke.com",
-    amount: "₦5,000",
-    coins: 50,
-    date: "12-09-2025 19:00 PM",
-    status: "Successful",
-  },
-];
 
 const getStatusColor = (status: string): string => {
   switch (status) {
@@ -126,10 +71,74 @@ export default function TransactionsTable(): React.JSX.Element {
   const [dateFilter] = useState<string>("");
   const [statusFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [apiTransactions, setApiTransactions] = useState<ApiTransaction[]>([]);
+  const [usersMap, setUsersMap] = useState<Record<string, { name: string; email: string }>>({});
+  const [loading, setLoading] = useState<boolean>(true);
 
   const itemsPerPage = 8;
 
-  const filteredTransactions = mockTransactions.filter((transaction) => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
+  useEffect(() => {
+    const fetchData = async (): Promise<void> => {
+      try {
+        const [transactionsRes, usersRes] = await Promise.all([
+          fetchWithToken<{ wallet: any; transactions: ApiTransaction[] }>("/wallet/transactions"),
+          fetchWithToken<{ users: User[]; total: number; page: number; limit: number }>("/v1/users"),
+        ]);
+        setApiTransactions(transactionsRes.transactions);
+        const usersMapTemp: Record<string, { name: string; email: string }> = {};
+        usersRes.users.forEach((user) => {
+          usersMapTemp[user._id] = { name: user.fullName, email: user.email };
+        });
+        setUsersMap(usersMapTemp);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const transactions: Transaction[] = apiTransactions.map((t) => {
+    const userInfo = usersMap[t.userId] || { name: t.userId, email: "" };
+    const nairaAmount = `₦${t.amount * 100}`;
+    const date = new Date(t.createdAt).toLocaleString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return {
+      id: t._id,
+      buyer: userInfo.name,
+      email: userInfo.email,
+      amount: nairaAmount,
+      coins: t.amount,
+      date,
+      status: "Successful",
+      image: "https://via.placeholder.com/48x48?text=👤", // Placeholder; update with actual image URL from user data when available
+    };
+  });
+
+  const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch =
       transaction.buyer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -162,43 +171,81 @@ export default function TransactionsTable(): React.JSX.Element {
     setTimeout(() => setSelectedTransaction(null), 300);
   };
 
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 text-center text-gray-600"
+      >
+        Loading transactions...
+      </motion.div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden"
+    >
       {/* Header */}
-      <div className="p-4 md:p-6 border-b border-gray-200">
+      <motion.div
+        className="p-4 md:p-6 border-b border-gray-200"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="relative w-full sm:w-auto sm:max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search starter packs..."
+                placeholder="Search transactions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-20 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               />
             </div>
-            <button className="p-3 rounded-2xl bg-gray-800 text-white">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 rounded-2xl bg-gray-800 text-white"
+            >
               Search
-            </button>
+            </motion.button>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1"
+            >
               <Calendar size={16} />
               Date
-            </button>
-            <button className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1">
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-4 bg-gray-100 rounded-xl text-sm flex items-center gap-1"
+            >
               <Filter size={16} />
               Status
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Desktop Table */}
       <div className="hidden lg:block overflow-x-auto">
-        <table className="w-full text-sm">
+        <motion.table
+          className="w-full text-sm"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
@@ -211,15 +258,16 @@ export default function TransactionsTable(): React.JSX.Element {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedTransactions.map((transaction) => (
-              <tr
+              <motion.tr
                 key={transaction.id}
                 className="hover:bg-gray-50 cursor-pointer transition-colors duration-200 ease-in-out"
+                variants={itemVariants}
+                transition={{ duration: 0.2 }}
                 onClick={() => handleRowClick(transaction)}
               >
                 <td className="px-4 py-4 text-gray-900">{transaction.id}</td>
                 <td className="px-4 py-4">
                   <div className="font-medium text-gray-900">{transaction.buyer}</div>
-                  <div className="text-sm text-gray-500">{transaction.email}</div>
                 </td>
                 <td className="px-4 py-4 text-gray-900">{transaction.amount}</td>
                 <td className="px-4 py-4 text-gray-900">{transaction.coins}</td>
@@ -232,18 +280,25 @@ export default function TransactionsTable(): React.JSX.Element {
                     <span className="ml-1">{transaction.status}</span>
                   </span>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
-        </table>
+        </motion.table>
       </div>
 
       {/* Mobile Grid */}
-      <div className="lg:hidden p-4 grid grid-cols-1 gap-4">
+      <motion.div
+        className="lg:hidden p-4 grid grid-cols-1 gap-4"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
         {paginatedTransactions.map((transaction) => (
-          <div
+          <motion.div
             key={transaction.id}
             className="border border-gray-200 rounded-xl p-4 relative cursor-pointer hover:bg-gray-50 transition-all duration-200 ease-in-out"
+            variants={itemVariants}
+            transition={{ duration: 0.2 }}
             onClick={() => handleRowClick(transaction)}
           >
             <div className="flex justify-between items-start mb-3">
@@ -265,69 +320,24 @@ export default function TransactionsTable(): React.JSX.Element {
                 </span>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Modal */}
-      {selectedTransaction && isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out">
-          <div
-            className={`bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto transform transition-all duration-300 ease-in-out ${
-              isModalOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
-            }`}
-          >
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-gray-900">Transaction Details</h3>
-              <button
-                onClick={closeModal}
-                className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-              >
-                <CloseIcon size={20} />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <span className="font-medium text-gray-700">Transaction ID:</span>
-                <p className="text-gray-900">{selectedTransaction.id}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Buyer:</span>
-                <p className="text-gray-900">{selectedTransaction.buyer}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Email:</span>
-                <p className="text-gray-900">{selectedTransaction.email}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Amount:</span>
-                <p className="text-gray-900">{selectedTransaction.amount}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Coins Purchased:</span>
-                <p className="text-gray-900">{selectedTransaction.coins}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Date:</span>
-                <p className="text-gray-900">{selectedTransaction.date}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Status:</span>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedTransaction.status)}`}
-                >
-                  {getStatusIcon(selectedTransaction.status)}
-                  <span className="ml-1">{selectedTransaction.status}</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <TransactionModal
+        transaction={selectedTransaction}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+      {!loading && totalPages > 1 && (
+        <motion.div
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3"
+        >
           <div className="text-sm text-gray-700 text-center sm:text-left">
             Showing{" "}
             <span className="font-medium">
@@ -342,16 +352,20 @@ export default function TransactionsTable(): React.JSX.Element {
             results
           </div>
           <div className="flex items-center space-x-2">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
             >
               <ChevronLeft size={16} />
-            </button>
+            </motion.button>
             {Array.from({ length: totalPages }, (_, i) => (
-              <button
+              <motion.button
                 key={i + 1}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => handlePageChange(i + 1)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   currentPage === i + 1
@@ -360,18 +374,20 @@ export default function TransactionsTable(): React.JSX.Element {
                 }`}
               >
                 {i + 1}
-              </button>
+              </motion.button>
             ))}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
             >
               <ChevronRight size={16} />
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

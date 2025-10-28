@@ -11,6 +11,16 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { fetchWithToken } from "../../../utils/fetchWithToken";
+
+interface ApiUser {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  isVerifiedSeller: boolean;
+  createdAt: string;
+}
 
 interface User {
   id: string;
@@ -22,42 +32,6 @@ interface User {
   email: string;
   status: string;
 }
-
-const mockUsers: User[] = [
-  {
-    id: "USR-001",
-    image:
-      "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg",
-    name: "Samuel Micheal",
-    userId: "USR-001",
-    role: "Buyer",
-    contact: "09123330941",
-    email: "samuel.micheal@example.com",
-    status: "Approved",
-  },
-  {
-    id: "USR-002",
-    image:
-      "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg",
-    name: "Nathaniel Kehinde",
-    userId: "USR-002",
-    role: "Vendor",
-    contact: "09123330941",
-    email: "nathaniel.kehinde@example.com",
-    status: "Rejected",
-  },
-  {
-    id: "USR-003",
-    image:
-      "https://i.pinimg.com/736x/7d/b9/5d/7db95d35d90cf0e92be064de0c3c3358.jpg",
-    name: "Emmanuel Nwafor",
-    userId: "USR-003",
-    role: "Buyer",
-    contact: "09123330941",
-    email: "emmanuel.nwafor@example.com",
-    status: "Approved",
-  },
-];
 
 const getStatusColor = (status: string): string => {
   switch (status) {
@@ -85,15 +59,68 @@ const getStatusIcon = (status: string): React.ReactNode => {
   }
 };
 
+const Avatar: React.FC<{ name: string; image: string; size?: 'small' | 'medium' | 'large' }> = ({ name, image, size = 'medium' }) => {
+  const [imgError, setImgError] = useState(false);
+  const sizeClasses = size === 'small' ? 'h-8 w-8' : size === 'medium' ? 'h-12 w-12' : 'h-14 w-14';
+  const textSize = size === 'small' ? 'text-xs' : size === 'medium' ? 'text-sm' : 'text-base';
+
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  if (imgError) {
+    return (
+      <div className={`${sizeClasses} rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-medium ${textSize}`}>
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      className={`${sizeClasses} rounded-full object-cover`}
+      src={image}
+      alt={name}
+      onError={() => setImgError(true)}
+    />
+  );
+};
+
 export default function UsersTable(): React.JSX.Element {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState('');  
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const itemsPerPage = 8;
 
-  const filteredUsers = mockUsers.filter(
+  useEffect(() => {
+    const fetchUsers = async (): Promise<void> => {
+      try {
+        const result = await fetchWithToken<{ users: ApiUser[]; total: number; page: number; limit: number }>("/v1/users");
+        const apiUsers = result.users;
+        const mappedUsers: User[] = apiUsers.map((u) => ({
+          id: u._id,
+          image: "https://via.placeholder.com/48x48?text=👤",
+          name: u.fullName,
+          userId: u._id,
+          role: u.role === "admin" ? "Admin" : u.role === "seller" ? "Vendor" : "Buyer",
+          contact: "N/A",
+          email: u.email,
+          status: u.role === "admin" ? "Approved" : u.isVerifiedSeller ? "Approved" : "Pending",
+        }));
+        setUsers(mappedUsers);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,6 +155,27 @@ export default function UsersTable(): React.JSX.Element {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="relative w-full sm:w-auto sm:max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search users..."
+                className="w-full px-12 py-3 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+        <div className="p-8 text-center text-gray-500">Loading users...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
@@ -183,11 +231,7 @@ export default function UsersTable(): React.JSX.Element {
                   onClick={() => handleViewUser(user)}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <img
-                      className="h-12 w-12 rounded-full object-cover mr-4"
-                      src={user.image}
-                      alt={user.name}
-                    />
+                    <Avatar name={user.name} image={user.image} size="medium" />
                     <div>
                       <div className="font-medium text-gray-900">
                         {user.name}
@@ -212,11 +256,12 @@ export default function UsersTable(): React.JSX.Element {
                 </td>
                 <td className="px-4 py-4 relative">
                   <button
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setOpenDropdown(
                         openDropdown === user.id ? null : user.id
-                      )
-                    }
+                      );
+                    }}
                     className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-gray-600"
                   >
                     <MoreHorizontal size={16} />
@@ -262,29 +307,26 @@ export default function UsersTable(): React.JSX.Element {
           >
             <div className="flex justify-between items-start mb-3">
               <div
-                className="flex items-center gap-3 cursor-pointer"
+                className="flex items-center gap-3 cursor-pointer flex-1"
                 onClick={() => handleViewUser(user)}
               >
-                <img
-                  className="h-14 w-14 rounded-lg object-cover"
-                  src={user.image}
-                  alt={user.name}
-                />
-                <div>
-                  <h3 className="font-semibold text-gray-900 text-sm">
+                <Avatar name={user.name} image={user.image} size="large" />
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-gray-900 text-sm truncate">
                     {user.name}
                   </h3>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                  <p className="text-xs text-gray-500">{user.role}</p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  <p className="text-xs text-gray-500 truncate">{user.role}</p>
                 </div>
               </div>
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative flex-shrink-0" ref={dropdownRef}>
                 <button
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setOpenDropdown(
                       openDropdown === user.id ? null : user.id
-                    )
-                  }
+                    );
+                  }}
                   className="p-2 text-gray-400 hover:text-gray-600"
                 >
                   <MoreHorizontal size={16} />
@@ -311,6 +353,17 @@ export default function UsersTable(): React.JSX.Element {
                     </button>
                   </div>
                 )}
+              </div>
+            </div>
+            <div className="space-y-1 text-xs text-gray-500">
+              <div>ID: {user.userId}</div>
+              <div>Contact: {user.contact}</div>
+              <div className="flex items-center">
+                Status:{" "}
+                <span className={`ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${getStatusColor(user.status)}`}>
+                  {getStatusIcon(user.status)}
+                  <span className="ml-1">{user.status}</span>
+                </span>
               </div>
             </div>
           </div>

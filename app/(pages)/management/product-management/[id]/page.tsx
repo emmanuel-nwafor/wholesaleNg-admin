@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { use } from "react";
 import { motion } from "framer-motion";
+import { fetchWithToken } from "../../../../utils/fetchWithToken";
 import ApproveModal from "../../../../components/modals/ApproveModal";
 import RejectModal from "../../../../components/modals/RejectModal";
 import SuccessModal from "../../../../components/modals/SuccessModal";
-import { Trash2 } from "lucide-react";
+import { Check, Star, Trash2, X } from "lucide-react";
 
 interface ApiProduct {
   _id: string;
@@ -19,31 +20,27 @@ interface ApiProduct {
   type: string;
   images: string[];
   description?: string;
+  condition?: string;
+  isFeatured?: boolean;
+  views?: number;
+  likes?: number;
+  verified?: boolean;
+  tags?: string[];
+  vendor?: { fullName: string };
+  createdAt?: string;
+  variants?: any[];
+  pricingTiers?: any[];
+}
+
+interface ProductResponse {
+  product: ApiProduct;
 }
 
 interface ProductDetailsProps {
   params: Promise<{ id: string }>;
 }
 
-const mockProduct: ApiProduct = {
-  _id: "mock-id-123",
-  name: "iPhone 16 Pro Max (Blue, 1TB - 256GB)",
-  price: 28000,
-  status: "pending",
-  seller: { fullName: "ABSOLUTE Stores" },
-  productId: "PRD-001",
-  categories: ["Phones & Tablet", "Mobile Phones", "Apple"],
-  type: "Smartphone",
-  images: [
-    "https://i.pinimg.com/736x/77/bb/58/77bb584d7313eb31d40afa9a76b3c8d9.jpg",
-  ],
-  description: `Titanium design with larger 6.3-inch Super Retina XDR display, footnote 1 durable latest-generation Ceramic Shield, Action button, and USB-C with USB 3 speeds footnote 2
-The first iPhone designed for Apple Intelligence. 3 Personal, private, powerful.
-Camera Control gives you an easier way to quickly access camera tools
-A18 Pro chip powers Apple Intelligence footnote 3 and AAA gaming — and helps deliver a huge leap in battery life
-4K 120 fps Dolby Vision and 4 studio-quality mics. A Pro studio in your pocket.
-Capture magical spatial photos and videos on iPhone 16 Pro, then relive them on Apple Vision Pro.`,
-};
+const defaultImage = "https://i.pinimg.com/736x/77/bb/58/77bb584d7313eb31d40afa9a76b3c8d9.jpg";
 
 export default function ProductDetails({ params }: ProductDetailsProps) {
   const resolvedParams = use(params);
@@ -59,9 +56,14 @@ export default function ProductDetails({ params }: ProductDetailsProps) {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setProduct(mockProduct);
-      setLoading(false);
+      try {
+        const data: ProductResponse = await fetchWithToken(`/admin/products/${id}`);
+        setProduct(data.product);
+      } catch (err) {
+        console.error("Error fetching product:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProduct();
   }, [id]);
@@ -71,17 +73,30 @@ export default function ProductDetails({ params }: ProductDetailsProps) {
 
   const handleStatusChange = async (status: "approved" | "rejected") => {
     if (!product) return;
-    await new Promise((r) => setTimeout(r, 1000));
-    setProduct({ ...product, status });
-    openSuccessModal(`Product ${status} successfully`);
-    setApproveModal(false);
-    setRejectModal(false);
+    try {
+      await fetchWithToken(`/admin/products/${product.productId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      setProduct({ ...product, status });
+      openSuccessModal(`Product ${status} successfully`);
+      setApproveModal(false);
+      setRejectModal(false);
+    } catch (err) {
+      console.error("Error updating status:", err);
+    }
   };
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this product?")) return;
-    await new Promise((r) => setTimeout(r, 1000));
-    openSuccessModal("Product deleted successfully");
+    if (!product) return;
+    try {
+      await fetchWithToken(`/admin/products/${product.productId}`, { method: "DELETE" });
+      openSuccessModal("Product deleted successfully");
+    } catch (err) {
+      console.error("Error deleting product:", err);
+    }
   };
 
   if (loading)
@@ -94,69 +109,78 @@ export default function ProductDetails({ params }: ProductDetailsProps) {
       <div className="p-10 text-center text-red-600">Product not found.</div>
     );
 
+  const sellerName = product.seller?.fullName || product.vendor?.fullName || "Unknown Seller";
+  const categories = product.categories.length > 0 ? product.categories.join(", ") : "N/A";
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-white overflow-hidden m-4 sm:m-6"
+      className="bg-white overflow-hidden m-4 sm:m-6 sm:px-4 md:px-10 lg:px-10"
     >
       {/* Top Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
+      <div className="flex flex-col lg:flex-row gap-8 p-6">
         {/* Left: Product Image */}
-        <div className="flex justify-center items-center bg-gray-50 rounded-2xl p-4">
+        <div className="flex justify-center items-center bg-gray-50 rounded-3xl p-4 flex-1">
           <img
-            src={product.images[0]}
+            src={product.images[0] || defaultImage}
             alt={product.name}
             className="w-full max-w-md h-auto object-cover rounded-lg"
           />
         </div>
 
         {/* Right: Product Details */}
-        <div className="flex flex-col justify-between">
+        <div className="flex flex-col flex-1">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-1">
               {product.name}
             </h1>
-            <p className="text-gray-600 text-sm mb-4">
-              <span className="font-medium">{product.seller?.fullName}</span> •{" "}
-              <span className="text-green-600 font-medium">4.5(3k+)</span> ⭐
-            </p>
-
-            <div className="text-sm text-gray-700 space-y-2 mb-6">
-              <p>
-                <span className="font-medium text-gray-900">Category:</span>{" "}
-                {product.categories.join(", ")}
+            <div className="mb-4 space-y-3">
+              <p className="flex items-center gap-2 text-sm text-gray-600">
+                {sellerName}
+                <span className="text-green-600 font-medium flex items-center gap-1">
+                  4.5
+                  <Star size={16} className="text-yellow-500 fill-current" />
+                  (3k+)
+                </span>
               </p>
-              <p>
-                <span className="font-medium text-gray-900">Product ID:</span>{" "}
+              <p className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="font-medium text-gray-900">Category:</span>
+                {categories}
+              </p>
+              <p className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="font-medium text-gray-900">Product ID:</span>
                 {product.productId}
               </p>
-              <p className="text-3xl font-bold text-gray-900 mt-3">
+            </div>
+
+            <div className="text-sm text-gray-700 p-4 space-y-2 bg-gray-50 rounded-2xl my-6">
+              <p className="text-3xl font-medium text-gray-900">
                 ₦{product.price.toLocaleString()}
               </p>
-              <p className="text-gray-600 text-sm">MOQ: 20 bags</p>
+              <p className="text-gray-600 text-sm">MOQ: 1 piece</p>
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row items-stretch gap-3 mt-4">
             <button
               onClick={() => setRejectModal(true)}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-lg border border-red-500 text-red-600 font-medium hover:bg-red-50 transition-colors"
+              className="flex-1 px-5 py-4 gap-4 flex items-center justify-center rounded-2xl border border-gray-200 text-red-500 font-medium bg-gray-100 hover:bg-gray-200 transition-colors"
             >
-              Reject Product
+              <X size={26} className="bg-red-500 p-1 rounded-full text-white" /> Reject Product
             </button>
             <button
               onClick={() => setApproveModal(true)}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+              className="flex-1 px-5 py-4 gap-4 rounded-2xl flex items-center justify-center bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors"
             >
-              Approve Product
+              <Check size={26} className="bg-white p-1 rounded-full text-black" /> Approve Product
             </button>
           </div>
 
           <button
             onClick={handleDelete}
-            className="flex items-center gap-2 text-red-600 font-medium mt-4 hover:underline text-sm"
+            className="flex items-center gap-2 text-red-500 font-medium mt-8 hover:underline text-sm self-center"
           >
             <Trash2 size={16} /> Delete Product
           </button>

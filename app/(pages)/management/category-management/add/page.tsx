@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import SuccessModal from "../../../../components/modals/SuccessModal";
-import SubCategoryModal from "../../../../components/modals/SubCategoryMpdal";
+import SubCategoryModal from "../../../../components/modals/SubCategoryModal";
 import { Plus, Trash2, ImageMinus } from "lucide-react";
 import { fetchWithToken } from "../../../../utils/fetchWithToken";
 
