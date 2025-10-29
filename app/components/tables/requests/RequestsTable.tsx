@@ -12,95 +12,41 @@ import {
   ChevronRight,
   ChevronDown,
 } from "lucide-react";
+import { fetchWithToken } from "../../../utils/fetchWithToken";
+import VerificationModal from "@/app/components/modals/VerificationModal";
+
+interface ApiVerification {
+  _id: string;
+  user: {
+    _id: string;
+    fullName: string;
+    email: string;
+    image?: string;
+  };
+  businessName: string;
+  businessImage?: string;
+  nin: string;
+  cacNumber: string;
+  submittedAt: string;
+  status: "pending" | "approved" | "rejected";
+}
 
 interface RequestItem {
   id: string;
-  storeImage: string;
+  storeImage?: string;
   storeName: string;
   email: string;
   fullName: string;
-  userImage: string;
+  userImage?: string;
   nni: string;
   cacNo: string;
   dateSubmitted: string;
-  status: "Approved" | "Pending" | "Rejected" | string;
+  status: string;
 }
 
-const mockRequests: RequestItem[] = [
-  {
-    id: "VR-001",
-    storeImage:
-      "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
-    storeName: "ABSOLUTE Stores",
-    email: "estherhoward82@gmail.com",
-    fullName: "Esther Howard",
-    userImage:
-      "https://i.pinimg.com/736x/11/d8/b4/11d8b417be2522a3dd88930fac4b1f6c.jpg",
-    nni: "1234567890",
-    cacNo: "987654321",
-    dateSubmitted: "09-20-2025, 11:00 PM",
-    status: "Approved",
-  },
-  {
-    id: "VR-002",
-    storeImage:
-      "https://i.pinimg.com/736x/33/4d/84/334d8445375f2996cebc78d266ea7ef4.jpg",
-    storeName: "ABSOLUTE Stores",
-    email: "estherhoward82@gmail.com",
-    fullName: "Esther Howard",
-    userImage:
-      "https://i.pinimg.com/736x/33/4d/84/334d8445375f2996cebc78d266ea7ef4.jpg",
-    nni: "1234567890",
-    cacNo: "987654321",
-    dateSubmitted: "09-20-2025, 11:00 PM",
-    status: "Pending",
-  },
-  {
-    id: "VR-003",
-    storeImage:
-      "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
-    storeName: "ABSOLUTE Stores",
-    email: "estherhoward82@gmail.com",
-    fullName: "Esther Howard",
-    userImage:
-      "https://i.pinimg.com/1200x/cf/08/ff/cf08ff39e65eaab359572c1a07b4a5b6.jpg",
-    nni: "1234567890",
-    cacNo: "987654321",
-    dateSubmitted: "09-20-2025, 11:00 PM",
-    status: "Pending",
-  },
-  {
-    id: "VR-004",
-    storeImage:
-      "https://i.pinimg.com/736x/79/ae/7a/79ae7ad683ac85aac7d0a443db553057.jpg",
-    storeName: "ABSOLUTE Stores",
-    email: "estherhoward82@gmail.com",
-    fullName: "Esther Howard",
-    userImage:
-      "https://i.pinimg.com/736x/79/ae/7a/79ae7ad683ac85aac7d0a443db553057.jpg",
-    nni: "1234567890",
-    cacNo: "987654321",
-    dateSubmitted: "09-20-2025, 11:00 PM",
-    status: "Pending",
-  },
-  {
-    id: "VR-005",
-    storeImage:
-      "https://i.pinimg.com/736x/36/0b/4f/360b4fa69adc5b1db159cecb4ce467bc.jpg",
-    storeName: "ABSOLUTE Stores",
-    email: "estherhoward82@gmail.com",
-    fullName: "Esther Howard",
-    userImage:
-      "https://i.pinimg.com/736x/36/0b/4f/360b4fa69adc5b1db159cecb4ce467bc.jpg",
-    nni: "1234567890",
-    cacNo: "987654321",
-    dateSubmitted: "09-20-2025, 11:00 PM",
-    status: "Rejected",
-  },
-];
-
 const getStatusColor = (status: string): string => {
-  switch (status) {
+  const normalized = status.charAt(0).toUpperCase() + status.slice(1);
+  switch (normalized) {
     case "Approved":
       return "bg-green-100 text-green-800";
     case "Pending":
@@ -113,7 +59,8 @@ const getStatusColor = (status: string): string => {
 };
 
 const getStatusIcon = (status: string): React.ReactNode => {
-  switch (status) {
+  const normalized = status.charAt(0).toUpperCase() + status.slice(1);
+  switch (normalized) {
     case "Approved":
       return <Check className="w-3 h-3" />;
     case "Pending":
@@ -125,21 +72,81 @@ const getStatusIcon = (status: string): React.ReactNode => {
   }
 };
 
+const Avatar: React.FC<{ name: string; image?: string; size?: 'small' | 'medium' | 'large' }> = ({ name, image, size = 'medium' }) => {
+  const sizeClasses = size === 'small' ? 'h-8 w-8' : size === 'medium' ? 'h-12 w-12' : 'h-10 w-10';
+  const textSize = size === 'small' ? 'text-xs' : 'text-sm';
+
+  const safeName = name || '';
+  const initials = safeName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  return (
+    <div className="relative">
+      {image ? (
+        <img className={`${sizeClasses} rounded-full object-cover`} src={image} alt={name} 
+          onError={(e) => { 
+            const img = e.currentTarget;
+            img.style.display = 'none'; 
+            const fallback = img.nextSibling as HTMLElement | null;
+            if (fallback) fallback.style.display = 'flex'; 
+          }} 
+        />
+      ) : null}
+      <div className={`${sizeClasses} rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium ${textSize} ${image ? 'absolute inset-0 hidden' : ''}`}>
+        {initials}
+      </div>
+    </div>
+  );
+};
+
 export default function RequestsTable(): React.JSX.Element {
+  const [requests, setRequests] = useState<RequestItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(
-    null
-  );
+  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 8;
 
-  const filteredRequests = mockRequests.filter(
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const data = await fetchWithToken<{ verifications: ApiVerification[] }>("/admin/seller-verifications");
+        const mappedRequests: RequestItem[] = data.verifications.map(v => ({
+          id: v._id,
+          storeImage: v.businessImage,
+          storeName: v.businessName || 'Unnamed Store',
+          email: v.user.email,
+          fullName: v.user.fullName,
+          userImage: v.user.image,
+          nni: v.nin,
+          cacNo: v.cacNumber,
+          dateSubmitted: new Date(v.submittedAt).toLocaleString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          status: v.status,
+        }));
+        setRequests(mappedRequests);
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, []);
+
+  const filteredRequests = requests.filter(
     (r) =>
-      r.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.email.toLowerCase().includes(searchTerm.toLowerCase())
+      (r.storeName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const paginatedRequests = filteredRequests.slice(
@@ -163,12 +170,26 @@ export default function RequestsTable(): React.JSX.Element {
     setOpenDropdown(null);
   };
 
-  const handleApprove = (): void => {
-    setOpenModal(false);
+  const handleApprove = async (): Promise<void> => {
+    if (!selectedRequest) return;
+    try {
+      await fetchWithToken(`/admin/seller-verifications/${selectedRequest.id}/approve`, { method: "PATCH" });
+      setRequests(prev => prev.map(r => r.id === selectedRequest.id ? { ...r, status: "approved" } : r));
+      setOpenModal(false);
+    } catch (error) {
+      console.error("Failed to approve:", error);
+    }
   };
 
-  const handleReject = (): void => {
-    setOpenModal(false);
+  const handleReject = async (): Promise<void> => {
+    if (!selectedRequest) return;
+    try {
+      await fetchWithToken(`/admin/seller-verifications/${selectedRequest.id}/reject`, { method: "PATCH" });
+      setRequests(prev => prev.map(r => r.id === selectedRequest.id ? { ...r, status: "rejected" } : r));
+      setOpenModal(false);
+    } catch (error) {
+      console.error("Failed to reject:", error);
+    }
   };
 
   const handleDropdownToggle = (id: string, e: React.MouseEvent): void => {
@@ -192,6 +213,10 @@ export default function RequestsTable(): React.JSX.Element {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openDropdown]);
+
+  if (loading) {
+    return <div className="p-6 text-center text-gray-500">Loading...</div>;
+  }
 
   return (
     <>
@@ -263,19 +288,14 @@ export default function RequestsTable(): React.JSX.Element {
                     key={request.id} 
                     className="hover:bg-gray-50" 
                     onClick={(e) => handleViewDetails(request, e)}
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    // variants={rowVariants}
-                    custom={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3, delay: i * 0.1 }}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <img
-                          className="h-10 w-10 rounded-full object-cover mr-4"
-                          src={request.storeImage}
-                          alt={request.storeName}
-                        />
+                        <Avatar name={request.storeName} image={request.storeImage} size="large" />
                         <div>
                           <div className="font-medium text-gray-900">
                             {request.storeName}
@@ -297,7 +317,7 @@ export default function RequestsTable(): React.JSX.Element {
                         )}`}
                       >
                         {getStatusIcon(request.status)}
-                        <span className="ml-1">{request.status}</span>
+                        <span className="ml-1">{request.status.charAt(0).toUpperCase() + request.status.slice(1)}</span>
                       </span>
                     </td>
                     <td className="px-6 py-4 relative">
@@ -312,10 +332,10 @@ export default function RequestsTable(): React.JSX.Element {
                         {openDropdown === request.id && (
                           <motion.div 
                             className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-20 dropdown-menu"
-                            // variants={dropdownVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
+                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                            transition={{ duration: 0.1 }}
                             onClick={handleActionClick}
                           >
                             <button
@@ -324,17 +344,17 @@ export default function RequestsTable(): React.JSX.Element {
                             >
                               View Details
                             </button>
-                            {request.status === "Pending" && (
+                            {request.status === "pending" && (
                               <>
                                 <button
                                   className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                                  onClick={(e) => { handleActionClick(e); /* Handle approve */ setOpenDropdown(null); }}
+                                  onClick={(e) => { handleActionClick(e); handleApprove(); setOpenDropdown(null); }}
                                 >
                                   Approve Verification
                                 </button>
                                 <button
                                   className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                                  onClick={(e) => { handleActionClick(e); /* Handle reject */ setOpenDropdown(null); }}
+                                  onClick={(e) => { handleActionClick(e); handleReject(); setOpenDropdown(null); }}
                                 >
                                   Reject Verification
                                 </button>
@@ -347,9 +367,15 @@ export default function RequestsTable(): React.JSX.Element {
                   </motion.tr>
                 ))}
               </AnimatePresence>
+              {paginatedRequests.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No requests found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
 
         {/* Mobile & Tablet Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4 p-4">
@@ -366,11 +392,7 @@ export default function RequestsTable(): React.JSX.Element {
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
-                    <img
-                      className="h-12 w-12 rounded-full object-cover"
-                      src={request.storeImage}
-                      alt={request.storeName}
-                    />
+                    <Avatar name={request.storeName} image={request.storeImage} size="medium" />
                     <div>
                       <h3 className="font-semibold text-gray-900 text-sm">
                         {request.storeName}
@@ -389,10 +411,10 @@ export default function RequestsTable(): React.JSX.Element {
                   {openDropdown === request.id && (
                     <motion.div 
                       className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 dropdown-menu top-full" 
-                      // variants={dropdownVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      transition={{ duration: 0.1 }}
                       onClick={handleActionClick}
                     >
                       <button
@@ -401,17 +423,17 @@ export default function RequestsTable(): React.JSX.Element {
                       >
                         View Details
                       </button>
-                      {request.status === "Pending" && (
+                      {request.status === "pending" && (
                         <>
                           <button
                             className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                            onClick={(e) => { handleActionClick(e); /* Handle approve */ setOpenDropdown(null); }}
+                            onClick={(e) => { handleActionClick(e); handleApprove(); setOpenDropdown(null); }}
                           >
                             Approve Verification
                           </button>
                           <button
                             className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                            onClick={(e) => { handleActionClick(e); /* Handle reject */ setOpenDropdown(null); }}
+                            onClick={(e) => { handleActionClick(e); handleReject(); setOpenDropdown(null); }}
                           >
                             Reject Verification
                           </button>
@@ -436,13 +458,16 @@ export default function RequestsTable(): React.JSX.Element {
                       )}`}
                     >
                       {getStatusIcon(request.status)}
-                      <span className="ml-1">{request.status}</span>
+                      <span className="ml-1">{request.status.charAt(0).toUpperCase() + request.status.slice(1)}</span>
                     </span>
                   </div>
                 </div>
               </motion.div>
             ))}
           </AnimatePresence>
+          {paginatedRequests.length === 0 && (
+            <div className="col-span-full text-center text-gray-500 py-8">No requests found</div>
+          )}
         </div>
 
         {/* Pagination */}
@@ -494,80 +519,13 @@ export default function RequestsTable(): React.JSX.Element {
         )}
       </motion.div>
 
-      {/* Modal */}
-      <AnimatePresence>
-        {openModal && selectedRequest && (
-          <>
-            <motion.div 
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" 
-              onClick={() => setOpenModal(false)}
-              // variants={overlayVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            />
-            <motion.div 
-              className="fixed inset-0 flex items-center justify-center z-50 p-4" 
-              onClick={() => setOpenModal(false)}
-            //   variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <motion.div 
-                className="bg-white rounded-2xl p-6 w-full max-w-md" 
-                onClick={(e) => e.stopPropagation()}
-                // variants={modalVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">Verification Request</h2>
-                  <button onClick={() => setOpenModal(false)} className="text-gray-400 hover:text-gray-600">
-                    <X size={20} />
-                  </button>
-                </div>
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={selectedRequest.userImage}
-                      alt={selectedRequest.fullName}
-                      className="h-12 w-12 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="text-sm text-gray-500">Full Name</p>
-                      <p className="font-medium text-gray-900">{selectedRequest.fullName}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">NNI</p>
-                    <p className="font-medium text-gray-900">{selectedRequest.nni}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">CAC No.</p>
-                    <p className="font-medium text-gray-900">{selectedRequest.cacNo}</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    className="flex-1 py-2.5 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
-                    onClick={handleReject}
-                  >
-                    Reject
-                  </button>
-                  <button
-                    className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                    onClick={handleApprove}
-                  >
-                    Approve
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <VerificationModal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        request={selectedRequest || {} as RequestItem}
+      />
     </>
   );
 }

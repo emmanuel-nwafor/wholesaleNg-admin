@@ -1,5 +1,5 @@
+// Updated BannersTable.tsx
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,14 +12,32 @@ import {
   ChevronRight,
   ChevronDown,
 } from "lucide-react";
+import { fetchWithToken } from "@/app/utils/fetchWithToken";
+import BannerModal from "../../../components/modals/BannerModal"; 
+import DeleteBannerModal from "../../../components/modals/DeleteBannerModal"; 
+import SuccessModal from "../../../components/modals/SuccessModal"; 
+
+interface ApiBanner {
+  _id: string;
+  bannerTitle: string;
+  image: string;
+  position: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  status: boolean;
+  createdAt: string;
+}
 
 interface Banner {
   id: string;
   title: string;
   type: string;
   device: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   status: string;
+  image?: string;
 }
 
 interface FormData {
@@ -28,66 +46,8 @@ interface FormData {
   device: string;
   startDate: string;
   endDate: string;
+  image: File | null;
 }
-
-const mockBanners: Banner[] = [
-  {
-    id: "BAN-101",
-    title: "Normal",
-    type: "Simple",
-    device: "Web",
-    date: "End Date: 12-09-2025",
-    status: "Expired",
-  },
-  {
-    id: "BAN-102",
-    title: "Fashion Pack",
-    type: "Starter Pack",
-    device: "Web",
-    date: "End Date: 12-09-2025",
-    status: "Active",
-  },
-  {
-    id: "BAN-103",
-    title: "Starter Pack",
-    type: "Simple",
-    device: "Web",
-    date: "Preview Banner",
-    status: "Active",
-  },
-  {
-    id: "BAN-104",
-    title: "Fashion Pack",
-    type: "Starter Pack",
-    device: "Mobile",
-    date: "Delete Banner",
-    status: "Active",
-  },
-  {
-    id: "BAN-105",
-    title: "Starter Pack",
-    type: "Simple",
-    device: "Web",
-    date: "End Date: 12-09-2025",
-    status: "Active",
-  },
-  {
-    id: "BAN-106",
-    title: "Starter Pack",
-    type: "Simple",
-    device: "Web",
-    date: "End Date: 12-09-2025",
-    status: "Active",
-  },
-  {
-    id: "BAN-107",
-    title: "Starter Pack",
-    type: "Simple",
-    device: "Web",
-    date: "End Date: 12-09-2025",
-    status: "Active",
-  },
-];
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -157,35 +117,60 @@ const overlayVariants = {
 
 const parseDate = (dateStr: string) => {
   if (!dateStr) return "";
-  const [month, day, year] = dateStr.split("-").map(Number);
-  if (!month || !day || !year) return "";
-  return `${year}-${month.toString().padStart(2, "0")}-${day
-    .toString()
-    .padStart(2, "0")}`;
+  const date = new Date(dateStr);
+  return date.toISOString().split('T')[0];
 };
 
 const formatDisplayDate = (isoDate: string) => {
   if (!isoDate) return "";
-  const [year, month, day] = isoDate.split("-");
-  return `${month}-${day}-${year}`;
+  const date = new Date(isoDate);
+  return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 };
 
 export default function BannersTable() {
-  const [banners, setBanners] = useState<Banner[]>(mockBanners);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [openModal, setOpenModal] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    title: "",
-    type: "",
-    device: "",
-    startDate: "",
-    endDate: "",
+  const [modalProps, setModalProps] = useState<{
+    isOpen: boolean;
+    mode: "view" | "edit" | "add";
+    banner?: ApiBanner;
+  }>({
+    isOpen: false,
+    mode: "view",
   });
-  const [isAdd, setIsAdd] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedBannerId, setSelectedBannerId] = useState<string | null>(null);
+  const [selectedBannerTitle, setSelectedBannerTitle] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 8;
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const data = await fetchWithToken<{ banners: ApiBanner[] }>("/v1/banners");
+        const mappedBanners: Banner[] = data.banners.map((b) => ({
+          id: b._id,
+          title: b.bannerTitle,
+          type: b.type,
+          device: b.position,
+          startDate: parseDate(b.startDate),
+          endDate: parseDate(b.endDate),
+          status: b.status ? "Active" : "Expired",
+          image: b.image,
+        }));
+        setBanners(mappedBanners);
+      } catch (error) {
+        console.error("Failed to fetch banners:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBanners();
+  }, []);
 
   const filteredBanners = banners.filter(
     (banner) =>
@@ -205,69 +190,124 @@ export default function BannersTable() {
     setCurrentPage(page);
   };
 
-  const handleEdit = (banner: Banner, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    let ed = "";
-    if (banner.date?.startsWith("End Date:")) {
-      const datePart = banner.date.substring(9);
-      ed = parseDate(datePart);
+  const handleView = async (id: string) => {
+    try {
+      const data = await fetchWithToken<{ banner: ApiBanner }>("/v1/banners/" + id);
+      setModalProps({ isOpen: true, mode: "view", banner: data.banner });
+    } catch (error) {
+      console.error("Failed to fetch banner:", error);
     }
-    setFormData({
-      title: banner.title,
-      type: banner.type,
-      device: banner.device,
-      startDate: "",
-      endDate: ed,
-    });
-    setIsAdd(false);
-    setEditingId(banner.id);
-    setOpenModal(true);
+  };
+
+  const handleEdit = async (id?: string) => {
+    if (id) {
+      try {
+        const data = await fetchWithToken<{ banner: ApiBanner }>("/v1/banners/" + id);
+        setModalProps({ isOpen: true, mode: "edit", banner: data.banner });
+      } catch (error) {
+        console.error("Failed to fetch banner for edit:", error);
+      }
+    } else {
+      setModalProps({ isOpen: true, mode: "add" });
+    }
     setOpenDropdown(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isAdd) {
-      const newBanner: Banner = {
-        id: `BAN-${Date.now() % 10000 + 101}`,
-        title: formData.title,
-        type: formData.type,
-        device: formData.device,
-        date: formData.endDate
-          ? `End Date: ${formatDisplayDate(formData.endDate)}`
-          : "",
-        status: "Active",
-      };
-      setBanners([...banners, newBanner]);
-    } else if (editingId) {
-      setBanners(
-        banners.map((b) =>
-          b.id === editingId
-            ? {
-                ...b,
-                title: formData.title,
-                type: formData.type,
-                device: formData.device,
-                date: formData.endDate
-                  ? `End Date: ${formatDisplayDate(formData.endDate)}`
-                  : b.date,
-              }
-            : b
-        )
-      );
+  const handleAdd = () => handleEdit();
+
+  const handleModalSubmit = async (data: FormData) => {
+    const submitData = new FormData();
+    submitData.append("bannerTitle", data.title);
+    submitData.append("type", data.type);
+    submitData.append("position", data.device);
+    submitData.append("startDate", data.startDate);
+    submitData.append("endDate", data.endDate);
+    if (data.image) submitData.append("image", data.image);
+
+    try {
+      if (modalProps.banner?._id) {
+        await fetchWithToken(`/v1/banners/${modalProps.banner._id}`, { method: "PUT", body: submitData });
+      } else {
+        await fetchWithToken("/v1/banners", { method: "POST", body: submitData });
+      }
+      // Refetch banners
+      const res = await fetchWithToken<{ banners: ApiBanner[] }>("/v1/banners");
+      const mappedBanners: Banner[] = res.banners.map((b) => ({
+        id: b._id,
+        title: b.bannerTitle,
+        type: b.type,
+        device: b.position,
+        startDate: parseDate(b.startDate),
+        endDate: parseDate(b.endDate),
+        status: b.status ? "Active" : "Expired",
+        image: b.image,
+      }));
+      setBanners(mappedBanners);
+      const message = modalProps.banner?._id ? "Banner updated successfully" : "Banner added successfully";
+      setSuccessMessage(message);
+      setShowSuccess(true);
+    } catch (error) {
+      console.error("Failed to submit banner:", error);
     }
-    setOpenModal(false);
   };
 
-  const handleDisable = (id: string) => {
-    setBanners(
-      banners.map((b) => (b.id === id ? { ...b, status: "Disabled" } : b))
-    );
+  const handleDisable = async (id: string) => {
+    try {
+      await fetchWithToken(`/v1/banners/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: false }),
+      });
+      // Refetch
+      const data = await fetchWithToken<{ banners: ApiBanner[] }>("/v1/banners");
+      const mappedBanners: Banner[] = data.banners.map((b) => ({
+        id: b._id,
+        title: b.bannerTitle,
+        type: b.type,
+        device: b.position,
+        startDate: parseDate(b.startDate),
+        endDate: parseDate(b.endDate),
+        status: b.status ? "Active" : "Expired",
+        image: b.image,
+      }));
+      setBanners(mappedBanners);
+    } catch (error) {
+      console.error("Failed to disable banner:", error);
+    }
     setOpenDropdown(null);
   };
 
-  const handleDeleteBanner = (id: string) => {
-    setBanners(banners.filter((b) => b.id !== id));
+  const handleDeleteConfirm = async () => {
+    if (selectedBannerId) {
+      try {
+        await fetchWithToken(`/v1/banners/${selectedBannerId}`, { method: "DELETE" });
+        // Refetch
+        const data = await fetchWithToken<{ banners: ApiBanner[] }>("/v1/banners");
+        const mappedBanners: Banner[] = data.banners.map((b) => ({
+          id: b._id,
+          title: b.bannerTitle,
+          type: b.type,
+          device: b.position,
+          startDate: parseDate(b.startDate),
+          endDate: parseDate(b.endDate),
+          status: b.status ? "Active" : "Expired",
+          image: b.image,
+        }));
+        setBanners(mappedBanners);
+      } catch (error) {
+        console.error("Failed to delete banner:", error);
+      }
+    }
+    setDeleteModalOpen(false);
+    setSelectedBannerId(null);
+    setSelectedBannerTitle("");
+    setOpenDropdown(null);
+  };
+
+  const handleDeleteBanner = (id: string, title: string) => {
+    setSelectedBannerId(id);
+    setSelectedBannerTitle(title);
+    setDeleteModalOpen(true);
     setOpenDropdown(null);
   };
 
@@ -290,6 +330,10 @@ export default function BannersTable() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openDropdown]);
 
+  if (loading) {
+    return <div className="p-6 text-center text-gray-500">Loading...</div>;
+  }
+
   return (
     <>
       <motion.div
@@ -311,10 +355,10 @@ export default function BannersTable() {
                 className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               />
             </div>
-            <button className="px-6 py-3 rounded-2xl bg-gray-800 text-white text-sm">
-              Search
+            <button className="px-6 py-3 rounded-2xl bg-gray-800 text-white text-sm" onClick={handleAdd}>
+              Add Banner
             </button>
-            <div className="flex gap-2">
+            <div className="flex gap-2 ml-auto">
               <div className="relative">
                 <select className="px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white appearance-none">
                   <option>Date</option>
@@ -330,9 +374,8 @@ export default function BannersTable() {
             </div>
           </div>
         </div>
-
         {/* Desktop Table */}
-        <div className="hidden lg:block overflow-x-auto cursor-pointer">
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
@@ -349,7 +392,10 @@ export default function BannersTable() {
                   Device
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500">
-                  Date
+                  Start Date
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500">
+                  End Date
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500">
                   Status
@@ -364,8 +410,8 @@ export default function BannersTable() {
                 {paginatedBanners.map((banner, i) => (
                   <motion.tr
                     key={banner.id}
-                    className="hover:bg-gray-50"
-                    onClick={(e) => handleEdit(banner, e)}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleView(banner.id)}
                     initial="hidden"
                     animate="visible"
                     exit="hidden"
@@ -376,7 +422,8 @@ export default function BannersTable() {
                     <td className="px-6 py-4 text-gray-900">{banner.title}</td>
                     <td className="px-6 py-4 text-gray-900">{banner.type}</td>
                     <td className="px-6 py-4 text-gray-900">{banner.device}</td>
-                    <td className="px-6 py-4 text-gray-900">{banner.date}</td>
+                    <td className="px-6 py-4 text-gray-900">{formatDisplayDate(banner.startDate)}</td>
+                    <td className="px-6 py-4 text-gray-900">{formatDisplayDate(banner.endDate)}</td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
@@ -394,7 +441,6 @@ export default function BannersTable() {
                       >
                         <MoreHorizontal size={16} />
                       </button>
-
                       <AnimatePresence>
                         {openDropdown === banner.id && (
                           <motion.div
@@ -407,9 +453,7 @@ export default function BannersTable() {
                           >
                             <button
                               className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                              onClick={(e) => {
-                                handleEdit(banner, e);
-                              }}
+                              onClick={() => handleEdit(banner.id)}
                             >
                               Edit Banner
                             </button>
@@ -421,7 +465,7 @@ export default function BannersTable() {
                             </button>
                             <button
                               className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                              onClick={() => handleDeleteBanner(banner.id)}
+                              onClick={() => handleDeleteBanner(banner.id, banner.title)}
                             >
                               Delete Banner
                             </button>
@@ -432,10 +476,14 @@ export default function BannersTable() {
                   </motion.tr>
                 ))}
               </AnimatePresence>
+              {paginatedBanners.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">No banners found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
-
         {/* Mobile & Tablet Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4 p-4">
           <AnimatePresence>
@@ -443,7 +491,7 @@ export default function BannersTable() {
               <motion.div
                 key={banner.id}
                 className="border border-gray-200 rounded-xl p-4 relative cursor-pointer"
-                onClick={(e) => handleEdit(banner, e)}
+                onClick={() => handleView(banner.id)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -473,9 +521,7 @@ export default function BannersTable() {
                     >
                       <button
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                        onClick={(e) => {
-                          handleEdit(banner, e);
-                        }}
+                        onClick={() => handleEdit(banner.id)}
                       >
                         Edit Banner
                       </button>
@@ -487,17 +533,17 @@ export default function BannersTable() {
                       </button>
                       <button
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
-                        onClick={() => handleDeleteBanner(banner.id)}
+                        onClick={() => handleDeleteBanner(banner.id, banner.title)}
                       >
                         Delete Banner
                       </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
-
                 <div className="text-sm text-gray-700 space-y-1">
                   <div className="font-medium">ID: {banner.id}</div>
-                  <div>Date: {banner.date}</div>
+                  <div>Start Date: {formatDisplayDate(banner.startDate)}</div>
+                  <div>End Date: {formatDisplayDate(banner.endDate)}</div>
                   <div className="flex items-center">
                     <span className="font-medium mr-2">Status:</span>
                     <span
@@ -513,8 +559,10 @@ export default function BannersTable() {
               </motion.div>
             ))}
           </AnimatePresence>
+          {paginatedBanners.length === 0 && (
+            <div className="col-span-full text-center text-gray-500 py-8">No banners found</div>
+          )}
         </div>
-
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -563,138 +611,24 @@ export default function BannersTable() {
           </div>
         )}
       </motion.div>
-
-      {/* Modal */}
-      <AnimatePresence>
-        {openModal && (
-          <>
-            <motion.div
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setOpenModal(false)}
-              variants={overlayVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            />
-            <motion.div
-              className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            //   variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              onClick={() => setOpenModal(false)}
-            >
-              <motion.div
-                className="bg-white rounded-3xl p-6 w-full max-w-lg"
-                onClick={(e) => e.stopPropagation()}
-                // variants={modalVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                <form onSubmit={handleSubmit}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-gray-900">
-                      {isAdd ? "Add Banner" : "Edit Banner"}
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => setOpenModal(false)}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <X size={20} />
-                    </button>
-                  </div>
-                  <div className="space-y-4 mb-6">
-                    <div>
-                      <label className="text-sm text-gray-500 mb-1 block">Banner Title</label>
-                      <input
-                        type="text"
-                        value={formData.title}
-                        onChange={(e) =>
-                          setFormData({ ...formData, title: e.target.value })
-                        }
-                        placeholder="e.g. phone"
-                        className="w-full px-3 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm text-gray-500 mb-1 block">Device</label>
-                      <select
-                        value={formData.device}
-                        onChange={(e) =>
-                          setFormData({ ...formData, device: e.target.value })
-                        }
-                        className="w-full px-3 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      >
-                        <option value="">Select Device</option>
-                        <option value="Mobile">Mobile</option>
-                        <option value="Web">Web</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-gray-500 mb-1 block">Type</label>
-                      <select
-                        value={formData.type}
-                        onChange={(e) =>
-                          setFormData({ ...formData, type: e.target.value })
-                        }
-                        className="w-full px-3 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      >
-                        <option value="">Select Type</option>
-                        <option value="Simple">Simple</option>
-                        <option value="Promo">Promo</option>
-                      </select>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="flex-1">
-                        <label className="text-sm text-gray-500 mb-1 block">Start Date</label>
-                        <input
-                          type="date"
-                          value={formData.startDate}
-                          onChange={(e) =>
-                            setFormData({ ...formData, startDate: e.target.value })
-                          }
-                          className="w-full px-3 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <label className="text-sm text-gray-500 mb-1 block">End Date</label>
-                        <input
-                          type="date"
-                          value={formData.endDate}
-                          onChange={(e) =>
-                            setFormData({ ...formData, endDate: e.target.value })
-                          }
-                          className="w-full px-3 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setOpenModal(false)}
-                      className="flex-1 py-4 border border-gray-300 text-gray-600 rounded-2xl hover:bg-gray-50 text-sm font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 py-2.5 bg-slate-700 text-white rounded-2xl hover:bg-slate-900 text-sm font-medium"
-                    >
-                      {isAdd ? "Add Banner" : "Update Banner"}
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <BannerModal
+        isOpen={modalProps.isOpen}
+        onClose={() => setModalProps({ ...modalProps, isOpen: false })}
+        mode={modalProps.mode}
+        banner={modalProps.banner}
+        onSubmit={handleModalSubmit}
+      />
+      <DeleteBannerModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        bannerTitle={selectedBannerTitle}
+      />
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        message={successMessage}
+      />
     </>
   );
 }

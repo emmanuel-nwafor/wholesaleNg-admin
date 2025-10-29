@@ -1,3 +1,4 @@
+// UserDetailsPage.tsx (updated with modal)
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -15,6 +16,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 import UserTransactionsSwitchTabs from "@/app/components/header/UserTransactionsSwitchTabs";
+import SuspendModal from "@/app/components/modals/SuspendModal"; // Adjust path
+import SuccessModal from "@/app/components/modals/SuccessModal"; // Adjust path
 
 interface ApiUserProfile {
   user: {
@@ -74,41 +77,45 @@ export default function UserDetailsPage() {
     dateJoined: "",
   });
   const [loading, setLoading] = useState(true);
+  const [suspendModalOpen, setSuspendModalOpen] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const fetchUserProfile = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const result: ApiUserProfile = await fetchWithToken(`/v1/users/${id}/profile`);
+      const { user: apiUser, totalCoins } = result;
+      const dateJoined = new Date(apiUser.createdAt).toLocaleString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+      const status = apiUser.role === "admin" || apiUser.isVerifiedSeller ? "Active" : "Inactive";
+      setUser({
+        id: apiUser._id,
+        fullName: apiUser.fullName,
+        dateOfBirth: "N/A",
+        email: apiUser.email,
+        phone: "N/A",
+        role: apiUser.role === "admin" ? "Admin" : apiUser.role === "seller" ? "Seller" : "Buyer",
+        walletBalance: totalCoins,
+        totalSpent: 0,
+        totalUnlocks: 0,
+        status,
+        dateJoined,
+      });
+    } catch (error) {
+      console.error("Failed to fetch user profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserProfile = async (): Promise<void> => {
-      try {
-        const result: ApiUserProfile = await fetchWithToken(`/v1/users/${id}/profile`);
-        const { user: apiUser, totalCoins } = result;
-        const dateJoined = new Date(apiUser.createdAt).toLocaleString("en-US", {
-          month: "numeric",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        });
-        const status = apiUser.role === "admin" || apiUser.isVerifiedSeller ? "Active" : "Inactive";
-        setUser({
-          id: apiUser._id,
-          fullName: apiUser.fullName,
-          dateOfBirth: "N/A",
-          email: apiUser.email,
-          phone: "N/A",
-          role: apiUser.role === "admin" ? "Admin" : apiUser.role === "seller" ? "Seller" : "Buyer",
-          walletBalance: totalCoins,
-          totalSpent: 0,
-          totalUnlocks: 0,
-          status,
-          dateJoined,
-        });
-      } catch (error) {
-        console.error("Failed to fetch user profile:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (id) {
       fetchUserProfile();
     }
@@ -123,6 +130,23 @@ export default function UserDetailsPage() {
       }
     }
   }, [id, searchParams]);
+
+  const handleSuspendToggle = () => {
+    setSuspendModalOpen(true);
+  };
+
+  const confirmSuspendToggle = async () => {
+    try {
+      const action = user.status === "Active" ? "Suspend" : "Unsuspend";
+      await fetchWithToken(`/v1/users/${id}/suspend`, { method: 'PUT' });
+      setSuccessMessage(`${action} successful`);
+      setSuccessModalOpen(true);
+      setSuspendModalOpen(false);
+      await fetchUserProfile();
+    } catch (error) {
+      console.error("Failed to update user status:", error);
+    }
+  };
 
   if (loading) {
     return <div className="p-6 text-center text-gray-500">Loading...</div>;
@@ -145,8 +169,15 @@ export default function UserDetailsPage() {
 
           {/* Suspend and delete button */}
           <div className="flex gap-3 mt-4 sm:mt-0">
-            <button className="px-2 py-2 border border-gray-200 text-red-500 bg-gray-100 rounded-2xl">
-              Suspend user
+            <button 
+              onClick={handleSuspendToggle}
+              className={`px-2 py-2 border rounded-2xl ${
+                user.status === "Active" 
+                  ? "border-red-200 text-red-500 bg-red-100" 
+                  : "border-green-200 text-green-500 bg-green-100"
+              }`}
+            >
+              {user.status === "Active" ? "Suspend user" : "Unsuspend user"}
             </button>
             <button className="px-2 py-2 bg-red-500 text-white rounded-2xl">
               Delete user
@@ -155,7 +186,7 @@ export default function UserDetailsPage() {
         </div>
 
         {/* User Details Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
           {/* Row 1 */}
           <div className="space-y-6">
             <DetailItem icon={<Calendar1Icon size={20} />} label="Date of Birth" value={user.dateOfBirth} />
@@ -190,6 +221,20 @@ export default function UserDetailsPage() {
       <div className="">
         <UserTransactionsSwitchTabs userId={id} />
       </div>
+
+      <SuspendModal
+        isOpen={suspendModalOpen}
+        onClose={() => setSuspendModalOpen(false)}
+        onConfirm={confirmSuspendToggle}
+        userName={user.fullName}
+        action={user.status === "Active" ? "Suspend" : "Unsuspend"}
+      />
+
+      <SuccessModal
+        isOpen={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+        message={successMessage}
+      />
     </>
   );
 }
